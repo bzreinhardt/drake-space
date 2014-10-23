@@ -21,10 +21,10 @@
     </link>
 
     <force_element name="prop1">
-	<propellor lower_limit="0" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
+	<induction_coupler lower_limit="0" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
 	    <parent link="base_link"/>
 	    <origin xyz="0 0 0"/>
-	    <axis xyz="0 0 1"/>
-	</propellor>
+	    <axis xyz="0 1 0"/>
+	</induction_coupler>
     </force_element>
 </robot>

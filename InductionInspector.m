@@ -24,7 +24,10 @@ classdef InductionInspector < RigidBodyManipulator
           obj = addSensor(obj,kinect);
       end
       obj = addSensor(obj,FullStateFeedbackSensor);
+      % InductionInspectors operate in space
+      obj.gravity = [0;0;0];
       obj = compile(obj);
+      
     end
    
     function u0 = nominalThrust(obj)
@@ -119,7 +122,7 @@ classdef InductionInspector < RigidBodyManipulator
  %     v = sys.constructVisualizer();
 
       x0 = [0;0;0.01;zeros(9,1)];
-      u0 = Point(getInputFrame(r),1);
+      u0 = Point(getInputFrame(r),10);
       
       sys = cascade(ConstantTrajectory(u0),sys);
 
@@ -127,12 +130,12 @@ classdef InductionInspector < RigidBodyManipulator
 %      simulate(sys,[0 2],double(x0)+.1*randn(12,1));
       
       options.capture_lcm_channels = 'LCMGL';
-      [ytraj,xtraj,lcmlog] = simulate(sys,[0 2],double(x0),options);
+      [ytraj,xtraj,lcmlog] = simulate(sys,[0 5],double(x0),options);
       
-      [ytraj2,xtraj2] = simulateODE(sys,[0,2],double(x0),options)
+   %   [ytraj2,xtraj2] = simulateODE(sys,[0,2],double(x0),options)
       lcmlog
       %v.playback(xtraj,struct('lcmlog',lcmlog));
-      figure(1); clf; fnplt(ytraj);
+      figure(1); clf; fnplt(ytraj,3);
     end
   end
 end

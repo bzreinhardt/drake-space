@@ -1,8 +1,8 @@
 classdef RigidBodyCoupler < RigidBodyForceElement
 
   properties
-    kinframe
-    axis
+    kinframe %id number of the object's frame
+    axis % the coupler's axis in it's frame
     scale_factor = 1; %amount to scale the input by.
   end
   
@@ -24,15 +24,22 @@ classdef RigidBodyCoupler < RigidBodyForceElement
     end %constructor
     
     function [force, B_mod, dforce, dB_mod] = computeSpatialForce(obj,manip,q,qd)
-      %B_mod maps the input to generalized forces.
-      
+        % COMPUTESPATIALFORCE(manip,q,qd)
+        % @param manip - rigidBodyManipulator experiencing the force
+        % @param q - system state
+        % @param qd - time derivative of system state
+        % B_mod maps the input to generalized forces.
+      %Initialize with a flat world TODO change this
+      n_hat = [0;0;1];
       force = sparse(6,getNumBodies(manip))*q(1); %why multiply by q(1) here?
+      
       B_mod = manip.B*0*q(1); %initialize B_mod
 
       if (nargout>2)  % then compute gradients
         kinsol = doKinematics(manip,q,true);
         [x,J,dJ] = forwardKin(manip,kinsol,obj.kinframe,zeros(3,1)); %body origin in global frame
         [axis_world,Jaxis_world] = forwardKin(manip,kinsol,obj.kinframe,obj.axis); %thrust axis in global frame
+        
         daxis_world = Jaxis_world-J; 
         axis_world = axis_world-x;
 
@@ -41,15 +48,20 @@ classdef RigidBodyCoupler < RigidBodyForceElement
         nq = getNumPositions(manip); nu = getNumInputs(manip);
         dB_mod = sparse(nq*nu,getNumStates(manip));
         dB_mod((obj.input_num-1)*nq + (1:nq),1:nq) = obj.scale_factor*(J'*daxis_world + reshape(dJ'*axis_world,nq,nq));
+        force_dir = obj.genForceDir(axis_world,n_hat);
       else
         kinsol = doKinematics(manip,q);
         [x,J] = forwardKin(manip,kinsol,obj.kinframe,zeros(3,1));
         axis_world = forwardKin(manip,kinsol,obj.kinframe,obj.axis);
         axis_world = axis_world-x;
+        
+        force_dir = obj.genForceDir(axis_world,n_hat);
+        
       end
-      obj.scalefactor = 1-x(3);
+      %TODO change scaling based on physics
+      obj.scale_factor = 1/q(3)^3;
       % apply force along the z-axis of the reference frame
-      B_mod(:,obj.input_num) = obj.scale_factor*J'*axis_world;
+      B_mod(:,obj.input_num) = obj.scale_factor*J'*force_dir;
     end
     
   end
