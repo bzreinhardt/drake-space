@@ -29,3 +29,10 @@ T in RigidBodyFrames and RigidBodyObjects is the transform matrix
  B and B_mod are in the world reference frame 
 
  rpy2rotmat gives the matrix that will convert a vector represented in body coordinates with that given rpy to a representation in world coordinate
+
+ lcmgl is the java 3D drawing function I believe
+
+ Things to invest
+
+ FindClosestPoints only works on the level of distinct RigidBody objects in a model
+ Example 

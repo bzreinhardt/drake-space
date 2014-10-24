@@ -5,7 +5,7 @@ classdef InductionInspector < RigidBodyManipulator
     function obj = InductionInspector(sensor)
       if nargin<1, sensor=''; end
       options.floating = true;
-      options.terrain = RigidBodyFlatTerrain();
+      %options.terrain = RigidBodyFlatTerrain();
       w = warning('off','Drake:RigidBodyManipulator:ReplacedCylinder');
       warning('off','Drake:RigidBodyManipulator:UnsupportedContactPoints');
       obj = obj@RigidBodyManipulator(getFullPathFromRelativePath('test_coupler.urdf'),options);
@@ -83,7 +83,17 @@ classdef InductionInspector < RigidBodyManipulator
       obj = addShapeToBody(obj,'world',treeLeaves);
       obj = addContactShapeToBody(obj,'world',treeLeaves);
       obj = compile(obj);
-    end    
+    end  
+    
+    function obj = addTargetSurface(obj,lwh,xyz)
+        %Adds a conductive surface 
+        plate = RigidBodyBox(lwh,xyz,zeros(3,1));
+        plate.c = [230,232,250]/255;
+        obj = addShapeToBody(obj,'world',plate);
+       % obj = addContactShapeToBody(obj,'world',plate);
+        obj = compile(obj);
+    end
+        
     
     function traj_opt = addPlanVisualizer(obj,traj_opt)
       % spew out an lcmgl visualization of the trajectory.  intended to be
