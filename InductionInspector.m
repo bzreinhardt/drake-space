@@ -2,13 +2,18 @@ classdef InductionInspector < RigidBodyManipulator
   
   methods
     
-    function obj = InductionInspector(sensor)
-      if nargin<1, sensor=''; end
+    function obj = InductionInspector(urdf,sensor)
+      if nargin<1 
+          urdf = 'two_coupler_inspector.urdf';
+          sensor='';
+      elseif nargin == 1
+          sensor = '';
+      end
       options.floating = true;
       %options.terrain = RigidBodyFlatTerrain();
       w = warning('off','Drake:RigidBodyManipulator:ReplacedCylinder');
       warning('off','Drake:RigidBodyManipulator:UnsupportedContactPoints');
-      obj = obj@RigidBodyManipulator(getFullPathFromRelativePath('test_coupler.urdf'),options);
+      obj = obj@RigidBodyManipulator(getFullPathFromRelativePath(urdf),options);
       warning(w);
       
       switch (sensor)
@@ -26,6 +31,17 @@ classdef InductionInspector < RigidBodyManipulator
       obj = addSensor(obj,FullStateFeedbackSensor);
       % InductionInspectors operate in space
       obj.gravity = [0;0;0];
+      node1.name = 'coupler1';
+      obj = parseCollisionFilterGroup(obj,1,node1);
+      obj = parseCollisionFilterGroup(obj,2,node1);
+%       obj.body(1,2).contact_shape_group_name{2} = 'coupler1';
+%       obj.body(1,2).contact_shape_group_name{3} = 'coupler2';
+%       obj.body(1,2).contact_shape_group{2} = 2;
+%       obj.body(1,2).contact_shape_group{3} = 3;
+%       obj.body(1,1).contact_shape_group_name{2} = 'coupler1';
+%       obj.body(1,1).contact_shape_group_name{3} = 'coupler2';
+%       obj.body(1,1).contact_shape_group{2} = 1;
+%       obj.body(1,1).contact_shape_group{3} = 1;
       obj = compile(obj);
       
     end
