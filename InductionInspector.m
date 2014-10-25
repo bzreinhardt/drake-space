@@ -31,9 +31,9 @@ classdef InductionInspector < RigidBodyManipulator
       obj = addSensor(obj,FullStateFeedbackSensor);
       % InductionInspectors operate in space
       obj.gravity = [0;0;0];
-      node1.name = 'coupler1';
-      obj = parseCollisionFilterGroup(obj,1,node1);
-      obj = parseCollisionFilterGroup(obj,2,node1);
+     % node1.name = 'coupler1';
+     % obj = parseCollisionFilterGroup(obj,1,node1);
+     % obj = parseCollisionFilterGroup(obj,2,node1);
 %       obj.body(1,2).contact_shape_group_name{2} = 'coupler1';
 %       obj.body(1,2).contact_shape_group_name{3} = 'coupler2';
 %       obj.body(1,2).contact_shape_group{2} = 2;
@@ -101,12 +101,18 @@ classdef InductionInspector < RigidBodyManipulator
       obj = compile(obj);
     end  
     
-    function obj = addTargetSurface(obj,lwh,xyz)
+    function obj = addTargetSurface(obj,lwh,xyz,rpy)
+        if nargin <4
+            rpy = zeros(3,1);
+            if nargin <3
+                xyz = zeros(3,1);
+            end
+        end
         %Adds a conductive surface 
-        plate = RigidBodyBox(lwh,xyz,zeros(3,1));
-        plate.c = [230,232,250]/255;
+        plate = RigidBodyBox(lwh,xyz,rpy);
+        plate.c = [150,150,150]/255;
         obj = addShapeToBody(obj,'world',plate);
-       % obj = addContactShapeToBody(obj,'world',plate);
+   %     obj = addContactShapeToBody(obj,'world',plate);
         obj = compile(obj);
     end
         
@@ -143,12 +149,13 @@ classdef InductionInspector < RigidBodyManipulator
     function runOpenLoop
       r = InductionInspector();
      r.setGravity([0;0;0]) %we're in space
+     r = r.addTargetSurface([5,5,0.01],[0;0;0],[0;0;0]);
       sys = TimeSteppingRigidBodyManipulator(r,.01);
       
- %     v = sys.constructVisualizer();
+     v = sys.constructVisualizer();
 
-      x0 = [0;0;0.01;zeros(9,1)];
-      u0 = Point(getInputFrame(r),10);
+      x0 = [0;0;0.5;zeros(13,1)];
+      u0 = Point(getInputFrame(r),[0.08; -0.06]);
       
       sys = cascade(ConstantTrajectory(u0),sys);
 
@@ -162,6 +169,7 @@ classdef InductionInspector < RigidBodyManipulator
       lcmlog
       %v.playback(xtraj,struct('lcmlog',lcmlog));
       figure(1); clf; fnplt(ytraj,3);
+      v.playback(xtraj);
     end
   end
 end
