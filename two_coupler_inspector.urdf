@@ -20,17 +20,70 @@
 	</collision>
     </link>
 
+<joint name="coupler1_joint" type="fixed">
+<origin xyz="0 0.01 0"/>
+<parent link="base_link"/>
+<child link="coupler1_link"/>
+</joint>
+
+<joint name="coupler2_joint" type="fixed">
+<origin xyz="0 -0.01 0"/>
+<parent link="base_link"/>
+<child link="coupler2_link"/>
+</joint>
+
+    <link name="coupler1_link">
+	<inertial>
+	    <mass value="1"/>
+	    <origin xyz="0 0 0"/>
+	    <inertia ixx="1" ixy="0" ixz="0" iyx="0" iyy="1" iyz="0" izx="0" izy="0" izz="1" />
+	</inertial>
+	<visual>
+	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <geometry>
+		<box size="0.001 0.001 0.001" />
+	    </geometry>
+	</visual>
+	<collision>
+	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <geometry>
+		<box size="0.001 0.001 0.001" />
+	    </geometry>
+	</collision>
+    </link>
+
+
+    <link name="coupler2_link">
+	<inertial>
+	    <mass value="1"/>
+	    <origin xyz="0 0 0"/>
+	    <inertia ixx="1" ixy="0" ixz="0" iyx="0" iyy="1" iyz="0" izx="0" izy="0" izz="1" />
+	</inertial>
+	<visual>
+	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <geometry>
+		<box size="0.001 0.001 0.001" />
+	    </geometry>
+	</visual>
+	<collision>
+	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <geometry>
+		<box size="0.001 0.001 0.001" />
+	    </geometry>
+	</collision>
+    </link>
+
     <force_element name="coupler1">
 	<induction_coupler lower_limit="0" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
-	    <parent link="base_link"/>
+	    <parent link="coupler1_link"/>
 	    <origin xyz="0 0.1 0"/>
 	    <axis xyz="0 1 0"/>
-	</propellor>
+	</induction_coupler>
     </force_element>
     
 <force_element name="coupler1">
 	<induction_coupler lower_limit="0" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
-	    <parent link="base_link"/>
+	    <parent link="coupler2_link"/>
 	    <origin xyz="0 -0.1 0"/>
 	    <axis xyz="0 1 0"/>
 	</induction_coupler>
