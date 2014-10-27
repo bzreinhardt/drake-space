@@ -31,17 +31,6 @@ classdef InductionInspector < RigidBodyManipulator
       obj = addSensor(obj,FullStateFeedbackSensor);
       % InductionInspectors operate in space
       obj.gravity = [0;0;0];
-     % node1.name = 'coupler1';
-     % obj = parseCollisionFilterGroup(obj,1,node1);
-     % obj = parseCollisionFilterGroup(obj,2,node1);
-%       obj.body(1,2).contact_shape_group_name{2} = 'coupler1';
-%       obj.body(1,2).contact_shape_group_name{3} = 'coupler2';
-%       obj.body(1,2).contact_shape_group{2} = 2;
-%       obj.body(1,2).contact_shape_group{3} = 3;
-%       obj.body(1,1).contact_shape_group_name{2} = 'coupler1';
-%       obj.body(1,1).contact_shape_group_name{3} = 'coupler2';
-%       obj.body(1,1).contact_shape_group{2} = 1;
-%       obj.body(1,1).contact_shape_group{3} = 1;
       obj = compile(obj);
       
     end
@@ -113,6 +102,36 @@ classdef InductionInspector < RigidBodyManipulator
         plate.c = [150,150,150]/255;
         obj = addShapeToBody(obj,'world',plate);
    %     obj = addContactShapeToBody(obj,'world',plate);
+        obj = compile(obj);
+    end
+    
+    function obj = addCurvedSurface(obj,rad,len,varargin)
+         % obj = addCurvedSurface(radius,len) adds a
+      % RigidBodyCylinder to the world link. It defaults to aligning with
+      % the X axis (so the circle lies in the Y-Z plane.)
+      %
+      % obj =addCurvedSurface(radius,len,T) constructs a
+      % RigidBodyCylinder object with the geometry-to-body transform T.
+      % 
+      % obj = addCurvedSurface(radius,len,xyz,rpy) constructs a
+      % RigidBodyCylinder object with the geometry-to-body transform
+      % specified by the position, xyz, and Euler angles, rpy.
+      %
+      % @param radius - radius of the cylinder
+      % @param len - length of the cylinder
+      % @param T - 4x4 homogenous transform from geometry-frame to
+      %   body-frame
+      % @param xyz - 3-element vector specifying the position of the
+      %   geometry in the body-frame
+      % @param rpy - 3-element vector of Euler angles specifying the
+      %   orientation of the geometry in the world-frame
+        if nargin == 3
+            varargin = {[0;0;-7],[0;pi/2;0]};
+        end
+        plate = RigidBodyCylinder(rad,len,varargin{:});
+        %plate = RigidBodyCapsule(rad,len,varargin{:});
+        plate.c = [150,150,150]/255;
+        obj = addShapeToBody(obj,'world',plate);
         obj = compile(obj);
     end
         
