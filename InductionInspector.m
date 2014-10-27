@@ -190,5 +190,7 @@ classdef InductionInspector < RigidBodyManipulator
       figure(1); clf; fnplt(ytraj,3);
       v.playback(xtraj);
     end
+    
+    
   end
 end

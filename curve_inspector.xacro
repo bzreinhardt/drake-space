@@ -1,0 +1,96 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="test_inductor">
+
+
+    <xacro:property name="strut_len" value="0.15" />
+    <xacro:property name="mass" value="0.15" />
+    
+    <xacro:macro name="coupler_link" params="coupler_num">
+	<link name="coupler${coupler_num}_link">
+	<inertial>
+	    <mass value="0.01"/>
+	    <origin xyz="0 0 0"/>
+	    <inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+	</inertial>
+	<visual>
+	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <geometry>
+		<box size="0.05 0.05 0.05" />
+	    </geometry>
+	</visual>
+	<collision>
+	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <geometry>
+		<box size="0.0 0.0 0.0" />
+	    </geometry>
+	</collision>
+    </link>
+    </xacro:macro>
+   
+    <xacro:macro name="coupler" params="axis coupler_num">
+    <force_element name="coupler1">
+	<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
+	    <parent link="coupler${coupler_num}_link"/>
+	    <origin xyz="0 0 0"/>
+	    <axis xyz="${axis}"/>
+	</induction_coupler>
+    </force_element>
+</xacro:macro>
+<xacro:macro name="coupler_joint" params="origin axis coupler_num">
+    <joint name="coupler${coupler_num}_joint" type="continuous">
+	<origin xyz="${origin}"/>
+	<axis xyz = "${axis}" />
+    <limit lower="-0.01" upper="0.01" />
+<parent link="base_link"/>
+<child link="coupler${coupler_num}_link"/>
+</joint>
+</xacro:macro>
+
+    <link name="base_link">
+	<inertial>
+	    <mass value="1"/>
+	    <origin xyz="0 0 0"/>
+	    <inertia ixx="1" ixy="0" ixz="0" iyx="0" iyy="1" iyz="0" izx="0" izy="0" izz="1" />
+	</inertial>
+	<visual>
+	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <geometry>
+		<box size="0.1 0.1 0.1" />
+	    </geometry>
+	</visual>
+	<collision>
+	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <geometry>
+		<box size="0.1 0.1 0.1" />
+	    </geometry>
+	</collision>
+    </link>
+
+    <xacro:coupler_joint coupler_num="1" axis="1 0 0" origin="0 0.15 -0.1"/>
+    <xacro:coupler_joint coupler_num="2" axis="1 0 0" origin="0 -0.15 -0.1"/>
+<xacro:coupler_link coupler_num="1">
+</xacro:coupler_link>
+
+
+<xacro:coupler_link coupler_num="2">
+</xacro:coupler_link>
+
+<xacro:coupler coupler_num="1" axis="1 0 0">
+</xacro:coupler>
+<xacro:coupler coupler_num="2" axis="1 0 0">
+</xacro:coupler>
+
+<xacro:coupler_joint coupler_num="3" axis = "0 1 0" origin="0 0.15 0"/>
+<xacro:coupler_link coupler_num="3"/>
+<xacro:coupler coupler_num="3" axis="0 1 0"/>
+<xacro:coupler_joint coupler_num="4" axis = "0 1 0" origin="0 -0.15 0"/>
+<xacro:coupler_link coupler_num="4"/>
+<xacro:coupler coupler_num="4" axis="0 1 0"/>
+<xacro:coupler_joint coupler_num="5" axis = "1 0 0" origin="0.15 0 0"/>
+<xacro:coupler_link coupler_num="5"/>
+<xacro:coupler coupler_num="5" axis="0 1 0"/>
+<xacro:coupler_joint coupler_num="6" axis = "1 0 0" origin="-0.15 0 0"/>
+<xacro:coupler_link coupler_num="6"/>
+<xacro:coupler coupler_num="6" axis="1 0 0"/>
+
+</robot>
