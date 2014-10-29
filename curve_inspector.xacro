@@ -15,7 +15,7 @@
 	<visual>
 	    <origin rpy="0 0 0" xyz="0 0 0" />
 	    <geometry>
-		<box size="0.05 0.05 0.05" />
+		<cylinder length="0.01" radius="0.02"/> 
 	    </geometry>
 	</visual>
 	<collision>
@@ -32,7 +32,7 @@
 	<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
 	    <parent link="coupler${coupler_num}_link"/>
 	    <origin xyz="0 0 0"/>
-	    <axis xyz="${axis}"/>
+	    <axis xyz="1 0 0"/><!--make coupler always aligned with x axis of parent link-->
 	</induction_coupler>
     </force_element>
 </xacro:macro>

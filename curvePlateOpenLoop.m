@@ -8,7 +8,7 @@ function curvePlateOpenLoop
       
      v = sys.constructVisualizer();
 
-      x0 = [0;0;0.496;zeros(17,1)];
+      x0 = [0;0;0.4;zeros(17,1)];
       u0 = Point(getInputFrame(r),[-0.008; 0.008;0;0]);
       
       sys = cascade(ConstantTrajectory(u0),sys);

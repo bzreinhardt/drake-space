@@ -8,17 +8,50 @@ classdef InspectorGenerator
         function obj = InspectorGenerator(varargin)
         end
         function obj = addCoupler(obj,axis, d)
+            if size(axis,1) ~= 1
+                axis = axis';
+            end
+            if size(d,1) ~= 1
+                d= d';
+            end
+            
+            %ADDCOUPLER adds a coupler to the text to be built that is located on a
+            %vector d in body coordinates and rotates about axis
+            obj.max_coupler_id = obj.max_coupler_id + 1;
+            id = obj.max_coupler_id;
+            visualrpy = findVisualrpy(axis);
+            if size(visualrpy,1) ~= 1
+                visualrpy = visualrpy';
+            end
+            %add the text for a joint, a link and a force object
+            %keep each component in a different cell and then build the
+            %whole thing when you write the file
+            obj.text{end+1} = obj.coupler_joint;
+            obj.vals{end+1} = [id, d, axis, id];
+            obj.text{end+1} = obj.coupler_link;
+            obj.vals{end+1} = [id, id, axis];
+            obj.text{end+1} = obj.coupler;
+            obj.vals{end+1} = [id, visualrpy];
+            %add the values associated with the joint
+  
+            
         end
         function obj = genFile(obj,file_name)
+            if nargin < 2
+                file_name = obj.filename;
+            end
             fileID = fopen(file_name,'w');
             fprintf(fileID,obj.top);
             fprintf(fileID,obj.base_link);
-            for i=1:obj.num_couplers
-                obj.max_coupler_id = obj.max_coupler_id + 1;
-                fprintf(fileID,obj.coupler_joint,obj.max_coupler_id,obj.max_coupler_id);
-                fprintf(fileID,obj.coupler,obj.max_coupler_id,obj.max_coupler_id);
-                fprintf(fileID,obj.coupler_link,obj.max_coupler_id);
+            for i = 1:length(obj.text)
+                fprintf(fileID,obj.text{i},obj.vals{i});
             end
+%             for i=1:obj.num_couplers
+%                 obj.max_coupler_id = obj.max_coupler_id + 1;
+%                 fprintf(fileID,obj.coupler_joint,obj.max_coupler_id,obj.max_coupler_id);
+%                 fprintf(fileID,obj.coupler,obj.max_coupler_id,obj.max_coupler_id);
+%                 fprintf(fileID,obj.coupler_link,obj.max_coupler_id);
+%             end
             fprintf(fileID,obj.bottom);
         end
     end
@@ -26,10 +59,11 @@ classdef InspectorGenerator
     
     
     properties
-        num_couplers = 2;
+        num_couplers = 0;
         max_coupler_id = 0;
         filename;
-        text;
+        text = {};
+        vals = {};
         top = '<?xml version="1.0" ?>\n <robot name="test_inductor">\n';
         bottom = '</robot>';
         
@@ -54,8 +88,8 @@ classdef InspectorGenerator
             '</link>\n'];
         
         coupler_joint = ['<joint name="coupler%d_joint" type="continuous">\n',...
-            '<origin xyz="0 0.15 0"/>\n',...
-            '<axis xyz = "0 1 0" />\n',...
+            '<origin xyz="%f %f %f"/>\n',...
+            '<axis xyz = "%f %f %f" />\n',...
             '<parent link="base_link"/>\n',...
             '<child link="coupler%d_link"/>\n',...
             '</joint>\n'];
@@ -64,7 +98,7 @@ classdef InspectorGenerator
             '<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">\n',...
             '<parent link="coupler%d_link"/>\n',...
             '<origin xyz="0 0 0"/>\n',...
-            '<axis xyz="0 1 0"/>\n',...
+            '<axis xyz="%f %f %f"/>\n',...
             '</induction_coupler>\n',...
             '</force_element>\n'];
         coupler_link = ['<link name="coupler%d_link">\n',...
@@ -74,9 +108,9 @@ classdef InspectorGenerator
             '<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />\n',...
             '</inertial>\n',...
             '<visual>\n',...
-            '<origin rpy="0 0 0" xyz="0 0 0" />\n',...
+            '<origin rpy="%f %f %f" xyz="0 0 0" />\n',...
             '<geometry>\n',...
-            '<box size="0.05 0.05 0.05" />\n',...
+            '<cylinder length="0.01" radius="0.02" />\n',...
             '</geometry>\n',...
             '</visual>\n',...
             '<collision>\n',...
