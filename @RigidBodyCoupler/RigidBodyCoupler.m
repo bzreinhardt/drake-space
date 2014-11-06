@@ -24,6 +24,53 @@ classdef RigidBodyCoupler < RigidBodyForceElement
       end
     end %constructor
     
+    function [force, B_mod, dforce, dB_mod] = computeNonAffineForce(obj,manip,q,qd,u)
+        % COMPUTENONAFFINEFORECE(manip,q,qd)
+        % @param manip - rigidBodyManipulator experiencing the force
+        % @param q - system state
+        % @param qd - time derivative of system state
+        % B_mod maps the input to generalized forces.
+      %Initialize with a flat world TODO change this
+      
+      n_hat = [0;0;1];
+      force = sparse(6,getNumBodies(manip))*q(1); %why multiply by q(1) here?
+      
+      B_mod = manip.B*0*q(1); %initialize B_mod
+
+      if (nargout>2)  % then compute gradients
+        kinsol = doKinematics(manip,q,true);
+        [x,J,dJ] = forwardKin(manip,kinsol,obj.kinframe,zeros(3,1)); %body origin in global frame
+        [axis_world,Jaxis_world] = forwardKin(manip,kinsol,obj.kinframe,obj.axis); %thrust axis in global frame
+        
+        daxis_world = Jaxis_world-J; 
+        axis_world = axis_world-x;
+
+        dforce = sparse(6*getNumBodies(manip),getNumStates(manip));
+
+        nq = getNumPositions(manip); nu = getNumInputs(manip);
+        dB_mod = sparse(nq*nu,getNumStates(manip));
+        dB_mod((obj.input_num-1)*nq + (1:nq),1:nq) = obj.scale_factor*(J'*daxis_world + reshape(dJ'*axis_world,nq,nq));
+        
+      else
+        kinsol = doKinematics(manip,q);
+        [x,J] = forwardKin(manip,kinsol,obj.kinframe,zeros(3,1));
+        axis_world = forwardKin(manip,kinsol,obj.kinframe,obj.axis);
+        axis_world = axis_world-x;
+      end
+      %Find distance to surface, normal at the surface
+      %For now, assume all surfaces are attached to world, which is body 1
+      active_collision_options.body_idx = [obj.parent_link;1];
+%       
+      [phi,surf_norm,xA,xB,idxA,idxB] = manip.collisionDetect(kinsol, ...
+                                           false, ...
+                                           active_collision_options);
+      force_dir = obj.genForceDir(axis_world,surf_norm);
+      %TODO change scaling based on physics
+      obj.scale_factor = u;
+      % apply force along the z-axis of the reference frame
+      B_mod(:,obj.input_num) = obj.scale_factor*J'*force_dir;
+    end
+    
     function [force, B_mod, dforce, dB_mod] = computeSpatialForce(obj,manip,q,qd)
         % COMPUTESPATIALFORCE(manip,q,qd)
         % @param manip - rigidBodyManipulator experiencing the force

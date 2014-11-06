@@ -1,4 +1,4 @@
-classdef InductionInspector < RigidBodyManipulator
+classdef InductionInspector < NonlinRigidBodyManipulator
   
   methods
     
@@ -13,7 +13,7 @@ classdef InductionInspector < RigidBodyManipulator
       %options.terrain = RigidBodyFlatTerrain();
       w = warning('off','Drake:RigidBodyManipulator:ReplacedCylinder');
       warning('off','Drake:RigidBodyManipulator:UnsupportedContactPoints');
-      obj = obj@RigidBodyManipulator(getFullPathFromRelativePath(urdf),options);
+      obj = obj@NonlinRigidBodyManipulator(getFullPathFromRelativePath(urdf),options);
       warning(w);
       
       switch (sensor)
