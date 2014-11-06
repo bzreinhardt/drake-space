@@ -4,7 +4,7 @@ classdef InductionInspector < RigidBodyManipulator
     
     function obj = InductionInspector(urdf,sensor)
       if nargin<1 
-          urdf = 'two_coupler_inspector.urdf';
+          urdf = 'models/two_coupler_inspector.urdf';
           sensor='';
       elseif nargin == 1
           sensor = '';

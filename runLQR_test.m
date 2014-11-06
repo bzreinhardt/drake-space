@@ -1,6 +1,6 @@
 function xtraj = runLQR
 
-r = InductionInspector('curve_inspector_6_couplers.urdf');
+r = InductionInspector('models/curve_inspector_6_couplers.urdf');
  r = r.addCurvedSurface(7,2, [0;0;-7],[0;pi/2;0]);
 v = r.constructVisualizer();
 
