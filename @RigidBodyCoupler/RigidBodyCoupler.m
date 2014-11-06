@@ -13,7 +13,7 @@ classdef RigidBodyCoupler < RigidBodyForceElement
       obj.kinframe = frame_id;
       obj.axis = axis/norm(axis);      
       
-      obj.direct_feedthrough_flag = true;
+      obj.direct_feedthrough_flag = true; %inputs go through this
       obj.input_num = 0;
       obj.input_limits = [-inf inf];
       if (nargin > 2)
@@ -75,6 +75,7 @@ classdef RigidBodyCoupler < RigidBodyForceElement
   
   methods (Static)
    function [model,obj] =  parseURDFNode(model,robotnum,node,options)
+       %standard urdf 
       name = char(node.getAttribute('name'));
       name = regexprep(name, '\.', '_', 'preservecase');
       
@@ -92,6 +93,7 @@ classdef RigidBodyCoupler < RigidBodyForceElement
           rpy = reshape(parseParamString(model,robotnum,char(elnode.getAttribute('rpy'))),3,1);
         end
       end
+      
       fr = RigidBodyFrame(parent,xyz,rpy,[name,'_frame']);
       [model,frame_id] = addFrame(model,fr);
       
@@ -117,7 +119,7 @@ classdef RigidBodyCoupler < RigidBodyForceElement
       
       obj = RigidBodyCoupler(frame_id, axis, scaleFac, limits);
       obj.name = name;
-      obj.parent_link = parent;
+      obj.parent_link = parent; %remember parent link for collision checking
     end
   end
   
