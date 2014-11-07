@@ -1,4 +1,4 @@
-classdef RigidBodyCoupler < RigidBodyForceElement
+classdef RigidBodyCoupler < NonAffineRigidBodyForceElement
 
   properties
     kinframe %id number of the object's frame
