@@ -15,7 +15,7 @@ classdef NonlinManipulator < DrakeSystem
 
   methods (Abstract=true)
     %  H(q)vdot + C(q,v,f_ext) = Bu
-    [H,C,B] = manipulatorDynamics(obj,q,v);
+    [H,C,B] = nonlinManipulatorDynamics(obj,q,v);
   end
 
   methods
@@ -31,13 +31,13 @@ classdef NonlinManipulator < DrakeSystem
         v = msspoly('v',getNumVelocities(obj));
       end
       
-      [H,C,B] = manipulatorDynamics(obj,q,v);
-      [~,G] = manipulatorDynamics(obj,q,0*v);
+      [H,C,B] = nonlinManipulatorDynamics(obj,q,v);
+      [~,G] = nonlinManipulatorDynamics(obj,q,0*v);
       C_times_v = C-G;
     end
     
     function [xdot,dxdot] = dynamics(obj,t,x,u)
-    % Provides the DrakeSystem interface to the manipulatorDynamics.
+    % Provides the DrakeSystem interface to the nonlinManipulatorDynamics.
 
       q = x(1:obj.num_positions);
       v = x(obj.num_positions+1:end);
@@ -53,7 +53,7 @@ classdef NonlinManipulator < DrakeSystem
         % If it fails, then it will raise the same exception that I would
         % want to raise for this method, stating that not all outputs were
         % assigned.  (since I can't write dxdot anymore)
-        [H,C,B,dH,dC,dB] = obj.manipulatorDynamics(q,v);
+        [H,C,B,dH,dC,dB] = obj.nonlinManipulatorDynamics(q,v,true,u);
         Hinv = inv(H);
 
         if (obj.num_u>0)
@@ -75,7 +75,7 @@ classdef NonlinManipulator < DrakeSystem
           zeros(obj.num_positions,1), matGradMult(dVqInv, v), VqInv, zeros(obj.num_positions,obj.num_u);
           dvdot];
       else
-        [H,C,B] = manipulatorDynamics(obj,q,v);
+        [H,C,B] = nonlinManipulatorDynamics(obj,q,v);
         Hinv = inv(H);
         if (obj.num_u>0) tau=B*u - C; else tau=-C; end
         tau = tau + computeConstraintForce(obj,q,v,H,tau,Hinv);
@@ -349,13 +349,13 @@ classdef NonlinManipulator < DrakeSystem
 
       function rhs = dynamics_rhs(obj,t,x,u)
         q=x(1:obj.num_positions); v=x((obj.num_positions+1):end);
-        [~,C,B] = manipulatorDynamics(obj,q,v);
+        [~,C,B] = nonlinManipulatorDynamics(obj,q,v);
         if (obj.num_u>0) tau=B*u; else tau=zeros(obj.num_u,1); end
         rhs = [vToqdot(obj,q)*v;tau - C];
       end
       function lhs = dynamics_lhs(obj,x)
         q=x(1:obj.num_positions); v=x((obj.num_positions+1):end);
-        H = manipulatorDynamics(obj,q,v);  % just get H
+        H = nonlinManipulatorDynamics(obj,q,v);  % just get H
         lhs = blkdiag(eye(obj.num_positions),H);
       end
 
@@ -412,7 +412,7 @@ classdef NonlinManipulator < DrakeSystem
         qd=msspoly('v',sys.num_positions);
 
         try
-          [~,~,B] = manipulatorDynamics(sys,qt,qd);
+          [~,~,B] = nonlinManipulatorDynamics(sys,qt,qd);
           B = double(B.getmsspoly);
           if ~isa(B,'double') error('B isn''t a constant'); end
           if ~all(sum(B~=0,2)==1) || ~all(sum(B~=0,1)==1)
