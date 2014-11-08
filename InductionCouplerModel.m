@@ -8,7 +8,7 @@ classdef InductionCouplerModel
          function obj = InductionCouplerModel(options)
              obj = obj.findC();
              obj.sigma = 1/obj.rho; %conductivity of the plate 
-             obj.g_lims = obj.x_lims.^3;
+            
          end
         %% SET PROPERTIES
         function obj = set(obj,names, vals)
@@ -23,6 +23,12 @@ classdef InductionCouplerModel
                 end
             end
             obj = findC(obj);
+        end
+        
+        function obj = setSplines(obj, divs)
+            [f_x_spline, f_y_spline] = findSplines(obj, divs);
+            obj.f_x = f_x_spline; 
+            obj.f_y = f_y_spline;
         end
                %% FIND THE FORCE FROM THE COUPLER
         function f = findForce(obj,x,xdot,w_e)
@@ -43,6 +49,8 @@ classdef InductionCouplerModel
                 f = [-imag(im_force);-real(im_force)];
             elseif strcmp(obj.type,'em')
                 %Need to put em force model here
+                %from Thomson 2000 Electrodynamic Magnetic Suspension...
+                
             end
             
         end
@@ -83,24 +91,25 @@ classdef InductionCouplerModel
             v_y_min = obj.v_lims(2,1);
             v_y_max = obj.v_lims(2,2);
             g_min = obj.g_lims(1);
-            g_max = obj.g_lims(1);
+            g_max = obj.g_lims(2);
             w_min = obj.w_lims(1);
             w_max = obj.w_lims(2);
             
-            v_x = [v_x_min:(v_x_max-v_x_min)/divs:v_x_max];
-            v_y = [v_y_min:(v_y_max-v_y_min)/divs:v_y_max];
-            g = [g_min:(g_max-g_min)/divs:g_max];
-            w_e = [w_min:(w_max-w_min)/divs:w_max];
+            v_x = [v_x_min:(v_x_max-v_x_min)/divs.v_x:v_x_max];
+            v_y = [v_y_min:(v_y_max-v_y_min)/divs.v_y:v_y_max];
+            g = [g_min:(g_max-g_min)/divs.g:g_max];
+            w = [w_min:(w_max-w_min)/divs.w:w_max];
             
             
             Fx = zeros(length(v_x), length(v_y), length(g), length(w));
             Fy = zeros(length(v_x), length(v_y), length(g), length(w));
             disp('Finding forces over workspace ...');
             for i = 1:length(v_x)
+                disp(strcat('Progress: v_x = ', num2str(v_x(i)), ' out of ', num2str(v_x(end))));
                 for j = 1:length(v_y)
                     for k = 1:length(g)
-                        for l = 1:length(w_e)
-                            F = c.findForce([0,g(k)],[v_x(i) v_x(j)],w(l));
+                        for l = 1:length(w)
+                            F = obj.findForce([0,g(k)^2],[v_x(i) v_x(j)],w(l));
                             Fx(i,j,k,l) = F(1);
                             Fy(i,j,k,l) = F(2);
                         end
@@ -110,6 +119,11 @@ classdef InductionCouplerModel
             disp('Solving for splines')
             f_x_spline = csapi( {v_x,v_y,g,w}, Fx );
             f_y_spline = csapi( {v_x,v_y,g,w}, Fy );
+        end
+        
+        %% Find power output
+        function  P = findPower(obj,F,w)
+            P = F*w*obj.r_o;
         end
         
     end
@@ -153,6 +167,7 @@ classdef InductionCouplerModel
          w = 0.01; %width of the magnet
         mu_0 = 1.256E-6; %m*kg/s^2 A^2 magnetic permeability in a vacuum
         type = 'pm';%indicate whether an electromagnet or permanent magnet
+        eta = 1; %efficiency of the motor powering the magnet
         %PLATE PROPERTIES
         rho = 2.83E-6; %ohm-m resistivity of the plate
         sigma; %conductivity of the plate 
@@ -163,7 +178,12 @@ classdef InductionCouplerModel
          v_lims = [-10 10; -10 10]; %x velocity parallel to the plate
                      %y velocity perpendicular to the plate
          g_lims = [0.001 2]; %air gap m
-         w_e_lims = [-10000 10000]; %electric frequency
+         w_lims = [-10000 10000]; %electric frequency
+         %Calculated Properties
+         f_x; 
+         f_y;
+         
+         
     end
         
     
