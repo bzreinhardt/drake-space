@@ -64,7 +64,7 @@
 	    <inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
 	</inertial>
 	<visual>
-	    <origin rpy="0 0 0" xyz="0 0 0" />
+	    <origin rpy="1.5708 0 3.14" xyz="0 0 0" />
 	    <geometry>
 		<cylinder length="0.01" radius="0.02" />
 	    </geometry>

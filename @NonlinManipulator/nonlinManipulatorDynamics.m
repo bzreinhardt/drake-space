@@ -32,17 +32,18 @@ if length(obj.force)>0
       if (nargout>3)
           %TODO pass in u here
         
-        if ismethod(obj.force{i},'computeNonAffineForce') 
-            [force,B_force,dforce,dB_force] = computeNonAffineForce(obj.force{i},obj,q,qd,u);
+        if ismethod(obj.force{i},'computeNonAffineForce') && nargin > 4 
+            [force,B_force,dforce,dB_force] = computeNonAffineForce(obj.force{i},obj,q,qd,u(i));
         else
             [force,B_force,dforce,dB_force] = computeSpatialForce(obj.force{i},obj,q,qd);
         end
         dB = dB + dB_force;
       else
-        if ismethod(obj.force{i},'computeNonAffineForce') 
-            [force,B_force] = computeNonAffineForce(obj.force{i},obj,q,qd,u);
+        if ismethod(obj.force{i},'computeNonAffineForce') && nargin > 4
+            [force,B_force] = computeNonAffineForce(obj.force{i},obj,q,qd,u(i));
         else
             [force,B_force] = computeSpatialForce(obj.force{i},obj,q,qd);
+            B_force = B_force*u; 
         end
       end
       B = B+B_force;

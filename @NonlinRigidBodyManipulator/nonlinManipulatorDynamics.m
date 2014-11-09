@@ -33,14 +33,14 @@ if length(obj.force)>0
           %TODO pass in u here
         
         if ismethod(obj.force{i},'computeNonAffineForce') 
-            [force,B_force,dforce,dB_force] = computeNonAffineForce(obj.force{i},obj,q,qd,u);
+            [force,B_force,dforce,dB_force] = computeNonAffineForce(obj.force{i},obj,q,qd,u(i));
         else
             [force,B_force,dforce,dB_force] = computeSpatialForce(obj.force{i},obj,q,qd);
         end
         dB = dB + dB_force;
       else
         if ismethod(obj.force{i},'computeNonAffineForce') 
-            [force,B_force] = computeNonAffineForce(obj.force{i},obj,q,qd,u);
+            [force,B_force] = computeNonAffineForce(obj.force{i},obj,q,qd,u(i));
         else
             [force,B_force] = computeSpatialForce(obj.force{i},obj,q,qd);
         end
@@ -69,7 +69,7 @@ else
     df_ext=[]; 
   end
 end
-
+% This seems to stay the same regardless of control affineness
 if (use_mex && obj.mex_model_ptr~=0 && isnumeric(q) && isnumeric(qd))
   f_ext = full(f_ext);  % makes the mex implementation simpler (for now)
   if (nargout>3)

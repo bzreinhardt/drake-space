@@ -57,7 +57,7 @@ classdef NonlinManipulator < DrakeSystem
         Hinv = inv(H);
 
         if (obj.num_u>0)
-          vdot = Hinv*(B*u-C);
+          vdot = Hinv*(B-C);
           dtau = matGradMult(dB,u) - dC;
           dvdot = [zeros(obj.num_positions,1),...
             -Hinv*matGradMult(dH(:,1:obj.num_positions),vdot) + Hinv*dtau(:,1:obj.num_positions),...
@@ -75,9 +75,9 @@ classdef NonlinManipulator < DrakeSystem
           zeros(obj.num_positions,1), matGradMult(dVqInv, v), VqInv, zeros(obj.num_positions,obj.num_u);
           dvdot];
       else
-        [H,C,B] = nonlinManipulatorDynamics(obj,q,v);
+        [H,C,B] = nonlinManipulatorDynamics(obj,q,v,true,u);
         Hinv = inv(H);
-        if (obj.num_u>0) tau=B*u - C; else tau=-C; end
+        if (obj.num_u>0) tau=sum(B,2) - C; else tau=-C; end
         tau = tau + computeConstraintForce(obj,q,v,H,tau,Hinv);
 
         vdot = Hinv*tau;
@@ -412,7 +412,7 @@ classdef NonlinManipulator < DrakeSystem
         qd=msspoly('v',sys.num_positions);
 
         try
-          [~,~,B] = nonlinManipulatorDynamics(sys,qt,qd);
+          [~,~,B] = ManipulatorDynamics(sys,qt,qd);
           B = double(B.getmsspoly);
           if ~isa(B,'double') error('B isn''t a constant'); end
           if ~all(sum(B~=0,2)==1) || ~all(sum(B~=0,1)==1)
