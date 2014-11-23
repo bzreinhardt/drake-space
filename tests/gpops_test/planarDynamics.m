@@ -22,9 +22,7 @@ u     = input.phase.control;
 u1    = input.phase.control(:,1);
 u2    = input.phase.control(:,2);
 
-xdot     = vx;
-ydot     = vy;
-thetadot = omega;
+
 
 % TODO add in velocity dynamics - ignore for now
 vx_plate = zeros(size(vx));
@@ -40,31 +38,36 @@ for i = 1:size(a,1)
     %find coupler positions in world coordinates
     coupler_x = d(i,1)*cos(theta)-d(i,2)*sin(theta)+x;
     coupler_y = d(i,1)*sin(theta)+d(i,2)*cos(theta)+y;
+    
     [g,surf_norm] = sphereNormGap([coupler_x,coupler_y],SPHERE_RADIUS,SPHERE_CENTER);
     
-    if any(any(isnan([vx_plate,vy_plate,g,u(:,i)])))
+    if any(any(isnan([g,vx_plate,vy_plate,u(:,i)])))
         fx = NaN*net_force_x;
         fy = NaN*net_force_y;
     else
-        fx = fnval(input.auxdata.fx,[vx_plate,vy_plate,g,u(:,i)]')';
-        fy = fnval(input.auxdata.fy,[vx_plate,vy_plate,g,u(:,i)]')';
+    fx = fnval(input.auxdata.fx,[vx_plate,vy_plate,g,u(:,i)]')';
+    fy = fnval(input.auxdata.fy,[vx_plate,vy_plate,g,u(:,i)]')';
     end
-    
-    force_x = surf_norm(:,2).*fx + surf_norm(:,1).*fy;
-    force_y = -surf_norm(:,1).*fx + surf_norm(:,2).*fy;
-    torque = coupler_y.*force_x + coupler_x.*force_y;
+   
+    force_x = -surf_norm(:,2).*fx + surf_norm(:,1).*fy;
+    force_y = surf_norm(:,1).*fx + surf_norm(:,2).*fy;
+    torque = -(d(i,1)*sin(theta)+d(i,2)*cos(theta)).*force_x + ...
+        (d(i,1)*cos(theta)-d(i,2)*sin(theta)).*force_y;
     
     net_force_x = net_force_x + force_x;
     net_force_y = net_force_y + force_y;
     net_torque = net_torque + torque;
 end
 
+xdot = vx;
+ydot = vy;
+thetadot = omega;
 vxdot = net_force_x;
 vydot = net_force_y;
 omegadot = net_torque;
 
 phaseout.dynamics = [xdot, ydot, thetadot, vxdot, vydot, omegadot];
-phaseout.path = u1+u2;
+phaseout.path = (x-SPHERE_CENTER(1)).^2 + (y - SPHERE_CENTER(1)).^2;  
 phaseout.integrand = sqrt(u1.^2 + u2.^2);
 
 %

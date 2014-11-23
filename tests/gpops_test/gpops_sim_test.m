@@ -33,8 +33,8 @@ vx0      = 0;    vxf      = 0;
 vy0      = 0;    vyf      = 0;
 omega0   = 0;    omegaf   = 0;
 
-xmin     = -10; xmax     = 10;
-ymin     = -10; ymax     = 10;
+xmin     = -1; xmax     = 1;
+ymin     = 0; ymax     = 3;
 thetamin = -pi; thetamax = pi;
 vxmin    = -2;  vxmax    = 2;
 vymin    = -2;  vymax    = 2;
@@ -64,8 +64,8 @@ bounds.phase.control.upper = [u1Max,u2Max];
 %TODO look up what these represent
 bounds.phase.integral.lower = 0;
 bounds.phase.integral.upper = 100;
-bounds.phase.path.lower = [-1000];
-bounds.phase.path.upper = [1000];
+bounds.phase.path.lower = [5];
+bounds.phase.path.upper = [6];
 
 tGuess     = [t0; tf];
 xGuess     = [x0; xf];
