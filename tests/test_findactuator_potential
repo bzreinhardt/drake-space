@@ -1,0 +1,24 @@
+%% test findActuator Potential
+
+d1 = 0.5*[1/2^.5,1/2^.5,-0.1];
+d2 = 0.5*[-1/2^.5,1/2^.5,-0.1];
+d3 = 0.5*[1/2^.5,-1/2^.5,-0.1];
+a1 = d1/norm(d1);
+a2 = d2/norm(d2);
+a3 = d3/norm(d3);
+
+a = [a1;a2;a3];
+d = [d1;d2;d3];
+%define the sphere
+r = 7;
+c = [0;0;-7];
+
+params.a = a;
+params.d = d;
+load('coupler_splines.m');
+params.spline.x = f_x_spline;
+params.spline.y = f_y_spline;
+world.r = r;
+world.c = c;
+q = [0;0;0.1;zeros(6,1)];
+lims = findActuatorPotential(q,params,world)
