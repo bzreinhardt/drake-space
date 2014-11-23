@@ -18,6 +18,6 @@ surf_norm = R./(sqrt(sum(R.^2,2))*ones(1,states));
 
 g = sqrt(sum(R.^2,2))-r;
 if any(g<=0)
-    error_msg = strcat('findForceTorque: coupler', num2str(find(g<=0)), 'is not inside the freaking sphere');
+    error_msg = strcat('findForceTorque: coupler', num2str(find(g<=0)), 'is inside the freaking sphere');
     warning(error_msg);
 end

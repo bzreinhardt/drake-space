@@ -4,49 +4,34 @@ List of user-set options:
                                     Name   Value                used
                            linear_solver = mumps                 yes
                   ma57_automatic_scaling = yes                    no
-                                max_iter = 100                   yes
+                                max_iter = 10                    yes
                              mu_strategy = adaptive              yes
                              output_file = Induction_InspectorIPOPTinfo.txt  yes
                              print_level = 5                     yes
                       print_user_options = yes                   yes
-                                     tol = 1e-07                 yes
+                                     tol = 0.0001                yes
 This is Ipopt version 3.11.0, running with linear solver mumps.
 
-Number of nonzeros in equality constraint Jacobian...:    15294
-Number of nonzeros in inequality constraint Jacobian.:      471
-Number of nonzeros in Lagrangian Hessian.............:     6116
+Number of nonzeros in equality constraint Jacobian...:    34263
+Number of nonzeros in inequality constraint Jacobian.:      992
+Number of nonzeros in Lagrangian Hessian.............:     8914
 
-Total number of variables............................:     1884
+Total number of variables............................:     3963
                      variables with only lower bounds:        0
-                variables with lower and upper bounds:     1884
+                variables with lower and upper bounds:     3963
                      variables with only upper bounds:        0
-Total number of equality constraints.................:     1417
-Total number of inequality constraints...............:      237
+Total number of equality constraints.................:     2977
+Total number of inequality constraints...............:      497
         inequality constraints with only lower bounds:        0
-   inequality constraints with lower and upper bounds:      237
+   inequality constraints with lower and upper bounds:      497
         inequality constraints with only upper bounds:        0
 
 iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-   0  7.5740223e+01 1.29e+00 1.00e+02   0.0 0.00e+00    -  0.00e+00 0.00e+00   0
-   1  7.5633565e+01 1.29e+00 9.87e+01  -0.7 3.05e+01    -  1.45e-02 6.44e-05h  5
-   2r 7.5633565e+01 1.29e+00 9.96e+02   0.7 0.00e+00    -  0.00e+00 4.72e-07R 12
-   3r 7.7421490e+01 1.77e+00 9.80e+02   0.4 3.05e+02    -  3.50e-02 4.21e-03f  1
-   4r 7.5685379e+01 1.69e+00 9.41e+02  -0.2 1.99e+00    -  4.19e-02 3.97e-02f  1
-   5r 5.1829804e+01 1.66e+00 9.23e+02   1.2 1.24e+01    -  1.13e-02 2.27e-02f  1
-   6r 5.1995364e+01 1.57e+00 8.69e+02   0.3 1.78e+00    -  9.13e-02 5.56e-02f  1
-   7r 3.5285970e+01 3.18e+00 7.14e+02   1.3 2.81e+00    -  2.85e-01 1.73e-01f  1
-   8r 3.8159384e+01 1.13e+00 6.70e+02   0.7 7.12e-02   4.0 1.00e+00 6.85e-01f  1
-   9  3.0032389e+01 1.18e+00 7.98e+02  -0.3 5.73e+01    -  1.04e-02 3.63e-03f  2
-iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-  10  3.0126311e+01 1.18e+00 5.17e+03   1.5 3.87e+01   2.0 1.00e+00 6.78e-04h  4
-  11  3.0143933e+01 1.18e+00 1.64e+04   2.7 2.81e+01    -  2.84e-02 3.73e-05h  9
-  12r 3.0143933e+01 1.18e+00 8.43e+02   2.7 0.00e+00    -  0.00e+00 4.53e-07R 16
-  13r 3.1606260e+01 1.24e+00 3.66e+02  -3.7 4.53e+00    -  8.58e-01 3.15e-01f  1
-  14r 3.9947965e+01 5.51e-01 1.45e+02   0.0 3.23e-01    -  1.00e+00 8.30e-01f  1
-  15  3.8518425e+01 5.52e-01 9.74e+01   0.0 3.41e+01    -  2.62e-02 6.18e-04h  3
-  16  3.8359395e+01 5.52e-01 5.75e+03   0.8 2.74e+01    -  2.06e-01 1.16e-04h  5
-  17r 3.8359395e+01 5.52e-01 9.82e+02   1.4 0.00e+00    -  0.00e+00 4.27e-07R 13
-  18r 3.9305084e+01 3.22e-01 9.50e+02   1.1 1.17e+01    -  7.90e-01 4.77e-02f  1
-  19  3.1982097e+01 3.22e-01 9.75e+01  -6.3 2.36e+01    -  2.48e-02 3.11e-03f  1
-iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
-  20  3.1942219e+01 3.22e-01 3.02e+05  -0.4 1.28e+01    -  9.63e-01 3.12e-05h  1
+   0  9.9999900e+06 1.00e-02 5.23e-05   0.0 0.00e+00    -  0.00e+00 0.00e+00   0
+   1  5.0499900e+06 5.05e-03 9.39e+01  -0.8 6.23e-01    -  9.81e-01 4.95e-01f  2
+   2  5.0490000e+04 3.45e-04 5.71e+01  -1.6 9.90e-02   0.0 1.00e+00 9.90e-01f  1
+   3  1.1247756e+03 8.59e-05 1.98e+01  -2.6 1.17e-01  -0.5 1.00e+00 1.00e+00h  1
+   4  8.8689058e+02 1.42e-04 2.88e+01  -3.0 3.20e-01  -1.0 8.86e-01 9.17e-01H  1
+   5  1.5838220e+03 2.08e-04 1.97e+01  -3.2 4.16e-01  -0.5 1.00e+00 1.00e+00h  1
+   6  1.2024016e+03 5.34e-05 2.97e+01  -3.3 1.12e-01  -0.1 9.04e-01 1.00e+00h  1
+   7  9.2410927e+02 3.88e-05 6.69e+01  -3.4 1.37e-01  -0.6 1.00e+00 5.00e-01h  2
