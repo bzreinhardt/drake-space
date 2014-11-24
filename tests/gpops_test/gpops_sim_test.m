@@ -23,18 +23,19 @@ auxdata.d = [d1;d2];
 % --------------------------------------------------------------%
 %           Set up bounds on state, control, and time           %
 % --------------------------------------------------------------%
+phi = pi/70; %angle to rotate around surface
 t0 = 0;
-tf = 5;
+tf = 20;
 t_err = 0.5;
-x0       = 0;  xf       = 0;
-y0       = 0.1;  yf       = 0.085;
-theta0   = 0; thetaf   = 0;
+x0       = 0;  xf       = auxdata.r*sin(phi);
+y0       = 0.1;  yf  = y0 + auxdata.r*cos(phi) - auxdata.r;
+theta0   = 0; thetaf   = -phi;
 vx0      = 0;    vxf      = 0;
 vy0      = 0;    vyf      = 0;
 omega0   = 0;    omegaf   = 0;
 
-xmin     = -1; xmax     = 1;
-ymin     = 0; ymax     = 3;
+xmin     = -3; xmax     = 3;
+ymin     = -3; ymax     = 3;
 thetamin = -pi; thetamax = pi;
 vxmin    = -2;  vxmax    = 2;
 vymin    = -2;  vymax    = 2;
@@ -64,7 +65,7 @@ bounds.phase.control.upper = [u1Max,u2Max];
 %TODO look up what these represent
 bounds.phase.integral.lower = 0;
 bounds.phase.integral.upper = 1000000000;
-bounds.phase.path.lower = [-10000];
+bounds.phase.path.lower = [auxdata.r+(1/2)^0.5*0.1];
 bounds.phase.path.upper = [10000];
 
 tGuess     = [t0; tf];
@@ -82,9 +83,9 @@ guess.phase.state = [xGuess,yGuess,thetaGuess,vxGuess,vyGuess,omegaGuess];
 guess.phase.control = [u1Guess,u2Guess];
 guess.phase.integral = 0;
 
-mesh.method = 'hp-LiuRao';
-mesh.tolerance = 1e-4; 
-mesh.maxiteration = 40;
+mesh.method = 'hp-PattersonRao'; %'hp-LiuRao';
+mesh.tolerance = 1e-2; 
+mesh.maxiteration = 0;
 mesh.colpointsmin = 4;
 mesh.colpointsmax = 10;
 mesh.phase.colpoints = 4*ones(1,10);
@@ -96,15 +97,27 @@ mesh.phase.fraction = 0.1*ones(1,10);
 setup.name = 'Induction_Inspector';
 setup.functions.continuous = @planarDynamics;
 setup.functions.endpoint = @planarDynamicsEndpoint;
+
 setup.auxdata = auxdata;
+
 setup.bounds = bounds;
+
 setup.guess = guess;
+
 setup.mesh = mesh;
-setup.nlp.solver = 'ipopt';
-setup.nlp.ipoptoptions.maxiterations = 10;
-setup.nlp.ipoptoptions.tolerance = 1e-4;
+
+setup.nlp.solver = 'ipopt'; % {'ipopt','snopt'}
+setup.nlp.ipoptoptions.maxiterations = 100; 
+setup.nlp.snoptoptions.maxiterations = 300;
+setup.nlp.ipoptoptions.tolerance = 1e-3;
+
+setup.derivatives.supplier = 'sparseCD';
+setup.derivatives.derivativelevel = 'second';
+
 setup.displaylevel = 2;
 setup.scales.method = 'automatic-bounds';
+
+setup.method = 'RPM-Integration';
 
 % ----------------------------------------------------------------------- %
 % Solve problem and extract solution

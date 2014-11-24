@@ -68,7 +68,7 @@ omegadot = net_torque;
 
 phaseout.dynamics = [xdot, ydot, thetadot, vxdot, vydot, omegadot];
 %phaseout.path = (x-SPHERE_CENTER(1)).^2 + (y - SPHERE_CENTER(1)).^2; 
-phaseout.path = u1+u2;
-phaseout.integrand = sqrt(u1.^2 + u2.^2);
+phaseout.path = (x-SPHERE_CENTER(1)).^2+(y-SPHERE_CENTER(2)).^2;
+phaseout.integrand = 0.001*sqrt(u1.^2 + u2.^2);
 
 %
