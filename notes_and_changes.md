@@ -35,34 +35,11 @@ T in RigidBodyFrames and RigidBodyObjects is the transform matrix
  Things to invest
 
  FindClosestPoints only works on the level of distinct RigidBody objects in a model
- Example 
- Why does simulating a simple feedback LQR system with my InductionInspector take so long?
-  Possible Reasons:
-  *Bullet collision checking
-  *Large force gradient near surface
+ Example
 
-  
-
-*Definition* implies something that needs to be linked to or defined
-
-*RigidBodyActuator* objects apply forces/torques directly to joints
-*RigidBodyForceElements* objects apply forces/torques to links
-  
-  RigidBodyManipulator
------------------------
-  *RigidbodyManipulator* extends the Manipulator class to include rigid body dynamics and contact dynamics with *bullet*.
-  It is influenced by *RigidBodyForceElements* that can be added by hand or automatically as part of a URDF.
-  Most of the dynamics of i*RigidBodyManipulator* live in *Manipulator*.
-
-  *Manipulator*
------------------
-% An abstract class that wraps H(q)vdot + C(q,v,f_ext) = B(q)u.
- [xdot,dxdot] = dynamics(obj,t,x,u) 
-
-
-  Collisions and Bullet
-  ====================
-  [ptA,ptB,normal,distance,JA,JB,dJA,dJB] = pairwiseClosestPoints(obj,kinsol,bodyA_idx,bodyB_idx)
-   [phi,normal,xA,xB,idxA,idxB] = collisionDetect(obj,kinsol, allow_multiple_contacts, active_collision_options)
-
-
+ Trajectory Optimization
+ ======================
+ geval.m for Drake gradient format
+ dynamics needs 2 outputs xcdot and dxcdot
+ * note that in polynomialsystem (and I believe rigidbodysystem) xcdot and dxcdot are generated symbolically
+ *Trajectories can be stored in PPTrajectory

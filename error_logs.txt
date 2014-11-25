@@ -1,0 +1,48 @@
+%%% Error LOG
+%11-24
+runFunnelWithObstacles
+Cannot find required pod snopt
+Adding obstacles...
+Warning:  FMINCON  2 Change in x was less than options.TolX and maximum constraint violation was less
+than options.TolCon 
+> In NonlinearProgram>NonlinearProgram.mapSolverInfo at 1456
+  In NonlinearProgram>NonlinearProgram.fmincon at 1354
+  In NonlinearProgram>NonlinearProgram.solve at 924
+  In DirectTrajectoryOptimization>DirectTrajectoryOptimization.solveTraj at 176
+  In runDircolWithObs at 37
+  In runFunnelWithObstacles at 9 
+Elapsed time is 140.467848 seconds.
+Warning: matlabpool will be removed in a future release.
+To query the size of an already started parallel pool, query the 'NumWorkers' property of the pool.
+To check if a pool is already started use 'isempty(gcp('nocreate'))'. 
+Warning: matlabpool will be removed in a future release.
+Use parpool instead. 
+Starting matlabpool using the 'local' profile ... connected to 2 workers.
+Warning: matlabpool will be removed in a future release.
+To query the size of an already started parallel pool, query the 'NumWorkers' property of the
+pool.
+To check if a pool is already started use 'isempty(gcp('nocreate'))'. 
+Warning: matlabpool will be removed in a future release.
+To query the size of an already started parallel pool, query the 'NumWorkers' property of the
+pool.
+To check if a pool is already started use 'isempty(gcp('nocreate'))'. 
+Error using contourc
+Input arguments for contourc must be full.
+
+Error in contours (line 85)
+    CS = contourc(varargin{numarg_for_call});
+
+Error in contour3 (line 119)
+            [c, msg] = contours(args{1 : nin});
+
+Error in PolynomialSystem/sampledFiniteTimeVerification>plotPoly (line 558)
+  [c,h]=contour3(X1,X2,Ps,[rho,rho]);
+
+Error in PolynomialSystem/sampledFiniteTimeVerification>findMultipliers (line 534)
+        figure(2); clf; [minVmRho,junk]=plotPoly(x,V{i}-rho(i));
+
+Error in PolynomialSystem/sampledFiniteTimeVerification (line 143)
+  L=findMultipliers(x,V,Vdot,rho,rhodot,options);
+
+Error in runFunnelWithObstacles (line 50)
+V=sampledFiniteTimeVerification(poly,ts,Qf,V,options);

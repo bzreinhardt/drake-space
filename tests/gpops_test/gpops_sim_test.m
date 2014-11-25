@@ -23,7 +23,7 @@ auxdata.d = [d1;d2];
 % --------------------------------------------------------------%
 %           Set up bounds on state, control, and time           %
 % --------------------------------------------------------------%
-phi = pi/70; %angle to rotate around surface
+phi = pi/50; %angle to rotate around surface
 t0 = 0;
 tf = 20;
 t_err = 0.5;
@@ -68,6 +68,8 @@ bounds.phase.integral.upper = 1000000000;
 bounds.phase.path.lower = [auxdata.r+(1/2)^0.5*0.1];
 bounds.phase.path.upper = [10000];
 
+%tguess = solution. state
+%u guess = solution. u etc.
 tGuess     = [t0; tf];
 xGuess     = [x0; xf];
 yGuess     = [y0; yf];

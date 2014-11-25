@@ -1,7 +1,7 @@
 function trajectory_plot(output,options)
 %Defaults
 print_on = 0;
-directory = '';
+directory = '.';
 save = 0;
 disp = 1;
 animate = 0;
@@ -149,6 +149,8 @@ set(pp,'LineWidth',1.25);
 %axis square
 grid on
 %print -dpng Time-vs-Control.png
+
+
 end
 % --------------------------------------------------------------%
 %           Print Things                                        %
