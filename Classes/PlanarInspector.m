@@ -9,6 +9,16 @@ classdef PlanarInspector < DrakeSystem
         d; %coupler positions in body coordinates
         a; %coupler axes in body coordinates
         bounding_sphere;
+        dFxdg 
+dFxdvtan 
+dFxdvperp 
+dFxdu 
+
+dFydg 
+dFydvtan 
+dFydvperp 
+dFydu 
+        
     end
     
     methods
@@ -37,7 +47,7 @@ classdef PlanarInspector < DrakeSystem
             
         end
         
-        function xcdot = dynamics(obj,t,X,u)
+        function xcdot = oldDynamics(obj,t,X,u)
             x = X(1,:)';
             y = X(2,:)';
             theta = X(3,:)';
@@ -92,6 +102,64 @@ classdef PlanarInspector < DrakeSystem
                 disp('xcdot size ');
                 disp(size(xcdot));
             end
+        end
+        %Attempt at drake gradientalizable dynamics
+        function [xcdot dxcdot] = dynamics(obj,t,X,u)
+            if (nargout>1)
+    [dxcdot]= planarGradients(a1,a2,a3,a4,nargout-1);
+  end
+            
+            x = X(1);
+            y = X(2);
+            theta = X(3);
+            vx = X(4);
+            vy = X(5);
+            omega = X(6);
+            
+            
+            R_wb = [cos(theta) -sin(theta); sin(theta) cos(theta)];
+            
+            
+            
+            
+            net_force = zeros(size([vx;vy]));
+            
+            net_torque = zeros(size(omega));
+            %cycle through the forces and torques from each coupler
+            
+            for i = 1:size(obj.d,1)
+                %find coupler positions in world coordinates
+                % coupler_x = obj.d(i,1)*cos(theta)-obj.d(i,2)*sin(theta)+x;
+                % coupler_y = obj.d(i,1)*sin(theta)+obj.d(i,2)*cos(theta)+y;
+                %Coupler coordinates in world frame
+                d_w = R_wb*obj.d(i,1:2)' + [x;y];
+                %gap between sphere and coupler
+                g = sqrt(norm(d_w - obj.sphere_center)^2-obj.sphere_radius^2);
+                %normal at nearest point
+                n = (d_w - obj.sphere_radius)/norm(d_w - obj.sphere_radius);
+                %rotation to take world coordinates into plate coordinates
+                R_pw = [-n(2) n(1); n(1) n(2)];
+                
+                v_plate = R_pw*[vx;vy];
+                
+                fx = g^2 + v_plate(1)^2 + ...
+                    v_plate(2)^2 + u(i)^2;
+                
+                fy = g^2 + v_plate(1)^2 + ...
+                    v_plate(2)^2 + u(i)^2;
+                disp('size(fx) is');
+                disp(size(fx));
+                
+                force = R_pw'*[fx;fy];
+                torque = -d_w(2)*force(1) + d_w(1)*force(2);
+                
+                
+                net_force = net_force + force;
+                net_torque = net_torque + torque;
+            end
+            
+            xcdot = [vx;vy;omega;net_force;net_torque];
+            
         end
         
         function [g, surf_norm] = sphereNormGap(obj,x)

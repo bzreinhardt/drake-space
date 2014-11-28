@@ -6,6 +6,8 @@ classdef InductionCouplerModel
     
     methods
          function obj = InductionCouplerModel(options)
+             if nargin == 0
+             end
              obj = obj.findC();
              obj.sigma = 1/obj.rho; %conductivity of the plate 
             
