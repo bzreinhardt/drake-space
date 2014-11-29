@@ -9,16 +9,10 @@ classdef PlanarInspector < DrakeSystem
         d; %coupler positions in body coordinates
         a; %coupler axes in body coordinates
         bounding_sphere;
-        dFxdg 
-dFxdvtan 
-dFxdvperp 
-dFxdu 
-
-dFydg 
-dFydvtan 
-dFydvperp 
-dFydu 
-        
+        % These coefficients come from a fit in PolyForceFits.m. They are
+        % reasonably good fits for medium-sized induction couplers
+%         f_x = @(u,g)(-5.6219e-08.*u.^3+6.2003e-06.*u.^2+76.0622.*u).*6.2003e-06.*exp(-44.1463.*g)
+%         f_y = @(u,g)(5.811e-09.*u.^4+-2.2676e-08.*u.^3+-1.8637.*u.^2+0.29795.*u).*-33.8115.*exp(-38.9901.*g+-21.8594)
     end
     
     methods
@@ -104,10 +98,8 @@ dFydu
             end
         end
         %Attempt at drake gradientalizable dynamics
-        function [xcdot dxcdot] = dynamics(obj,t,X,u)
-            if (nargout>1)
-    [dxcdot]= planarGradients(a1,a2,a3,a4,nargout-1);
-  end
+        function [xcdot] = dynamics(obj,t,X,u)
+          
             
             x = X(1);
             y = X(2);
@@ -140,15 +132,12 @@ dFydu
                 %rotation to take world coordinates into plate coordinates
                 R_pw = [-n(2) n(1); n(1) n(2)];
                 
-                v_plate = R_pw*[vx;vy];
-                
-                fx = g^2 + v_plate(1)^2 + ...
-                    v_plate(2)^2 + u(i)^2;
-                
-                fy = g^2 + v_plate(1)^2 + ...
-                    v_plate(2)^2 + u(i)^2;
-                disp('size(fx) is');
-                disp(size(fx));
+                %v_plate = R_pw*[vx;vy];
+                fx = (-5.6219e-08.*u(i).^3+6.2003e-06.*u(i).^2+76.0622.*u(i))...
+                    .*6.2003e-06.*exp(-44.1463.*g);
+                fy = (5.811e-09.*u(i).^4+-2.2676e-08.*u(i).^3+-1.8637...
+                    .*u(i).^2+0.29795.*u(i)).*-33.8115.*exp(-38.9901.*g+-21.8594);
+               
                 
                 force = R_pw'*[fx;fy];
                 torque = -d_w(2)*force(1) + d_w(1)*force(2);
