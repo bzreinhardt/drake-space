@@ -114,9 +114,9 @@ classdef PlanarInspector < DrakeSystem
             
             
             
-            net_force = zeros(size([vx;vy]));
+            net_force = zeros(2,1);
             
-            net_torque = zeros(size(omega));
+            net_torque = 0;
             %cycle through the forces and torques from each coupler
             
             for i = 1:size(obj.d,1)
