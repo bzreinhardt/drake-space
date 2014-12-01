@@ -5,6 +5,8 @@
 % ------------------------------------------------------------- %
 %               Set up auxiliary data for problem               %
 % ------------------------------------------------------------- %
+
+%Total time with spline evaluations 95 s
 load('coupler_splines.mat');
 auxdata.fx = f_x_spline; % x force spline from coupler
 auxdata.fy = f_y_spline; % y force spline from coupler
@@ -26,7 +28,7 @@ auxdata.d = [d1;d2];
 phi = pi/50; %angle to rotate around surface
 t0 = 0;
 tf = 20;
-t_err = 0.5;
+t_err = 2;
 x0       = 0;  xf       = auxdata.r*sin(phi);
 y0       = 0.1;  yf  = y0 + auxdata.r*cos(phi) - auxdata.r;
 theta0   = 0; thetaf   = -phi;
@@ -51,8 +53,8 @@ u2Min = -10000; u2Max = 10000;
 
 bounds.phase.initialtime.lower = t0;
 bounds.phase.initialtime.upper = t0;
-bounds.phase.finaltime.lower   = tf;
-bounds.phase.finaltime.upper   = tf;
+bounds.phase.finaltime.lower   = tf-t_err;
+bounds.phase.finaltime.upper   = tf+t_err;
 
 bounds.phase.initialstate.lower = [x0,y0,theta0,vx0,vy0,omega0];
 bounds.phase.initialstate.upper = [x0,y0,theta0,vx0,vy0,omega0];
@@ -65,7 +67,7 @@ bounds.phase.control.upper = [u1Max,u2Max];
 %TODO look up what these represent
 bounds.phase.integral.lower = 0;
 bounds.phase.integral.upper = 1000000000;
-bounds.phase.path.lower = [auxdata.r+(1/2)^0.5*0.1];
+bounds.phase.path.lower = [(auxdata.r+(1/2)^0.5*0.1)^2];
 bounds.phase.path.upper = [10000];
 
 %tguess = solution. state
@@ -87,8 +89,8 @@ guess.phase.integral = 0;
 
 mesh.method = 'hp-PattersonRao'; %'hp-LiuRao';
 mesh.tolerance = 1e-2; 
-mesh.maxiteration = 0;
-mesh.colpointsmin = 4;
+mesh.maxiteration = 1;
+mesh.colpointsmin = 3;
 mesh.colpointsmax = 10;
 mesh.phase.colpoints = 4*ones(1,10);
 mesh.phase.fraction = 0.1*ones(1,10);
@@ -97,7 +99,8 @@ mesh.phase.fraction = 0.1*ones(1,10);
 % Set up solver
 % ----------------------------------------------------------------------- %
 setup.name = 'Induction_Inspector';
-setup.functions.continuous = @planarDynamics;
+%setup.functions.continuous = @planarDynamics;
+setup.functions.continuous = @drakeifiedPlanarDynamics;
 setup.functions.endpoint = @planarDynamicsEndpoint;
 
 setup.auxdata = auxdata;
@@ -108,12 +111,13 @@ setup.guess = guess;
 
 setup.mesh = mesh;
 
+
 setup.nlp.solver = 'ipopt'; % {'ipopt','snopt'}
 setup.nlp.ipoptoptions.maxiterations = 100; 
 setup.nlp.snoptoptions.maxiterations = 300;
 setup.nlp.ipoptoptions.tolerance = 1e-3;
 
-setup.derivatives.supplier = 'sparseCD';
+setup.derivatives.supplier = 'sparseCD';%'sparseFD'; %{'sparseCD';}
 setup.derivatives.derivativelevel = 'second';
 
 setup.displaylevel = 2;

@@ -43,3 +43,13 @@ T in RigidBodyFrames and RigidBodyObjects is the transform matrix
  dynamics needs 2 outputs xcdot and dxcdot
  * note that in polynomialsystem (and I believe rigidbodysystem) xcdot and dxcdot are generated symbolically
  *Trajectories can be stored in PPTrajectory
+ *To create a PPTrajectory you need a pp form spline
+ *Drake has two(+) functions for creating ppform splines from a series of data. It uses pchipDeriv(t,x,xdot) to create position trajectory. It uses foh(t,u) to create input trajectories.
+ *pchipDeriv(t,y,ydot_minus,ydot_plus,dim) @optional ydot_plus,dim finds a cubic spline that fits the input data
+  it implements piecewise cubic Hermite polynomials with the derivatives
+  % specified.  (e.g., as in Hargraves86).
+  *ypp = foh(t0,y0)
+
+  USEFUL FUNCTIONS I DIDN"T KNOW ABOUT
+  ====================================
+  cumsum(A) - turns vector into cumulative running sum of vector elements

@@ -32,7 +32,7 @@ classdef PlanarInspector < DrakeSystem
             obj.d = [d1;d2];
             
             %constrained inputs
-            obj.setInputLimits(-1000,1000);
+            %obj.setInputLimits(-1000,1000);
             
             obj.bounding_sphere = max(sqrt(sum(obj.d.^2,2)));
             load('coupler_splines.mat');
@@ -98,7 +98,41 @@ classdef PlanarInspector < DrakeSystem
             end
         end
         %Attempt at drake gradientalizable dynamics
-        function [xcdot] = dynamics(obj,t,X,u)
+        
+        function [xcdot, dxcdot] = simpleDynamics(obj,t,X,u)
+             x = X(1);
+            y = X(2);
+            theta = X(3);
+            vx = X(4);
+            vy = X(5);
+            omega = X(6);
+            u1 = u(1);
+            u2 = u(2);
+            
+            d = [0,-0.1];
+            
+            R_wb = [cos(theta) -sin(theta); sin(theta) cos(theta)];
+            
+             net_force = [u1];
+            
+            net_torque = 0;
+            
+            function df = findGradient(obj,t,X,u)
+            df = sparse(size(X,1),size(X,1)+size(t,1)+size(u,1));
+            df(1,5) = 1;
+            df(2,6) = 1;
+            df(3,7) = 1;
+            df(4,8) = 1;
+            df(5,9) = 1;
+            end
+        
+      
+            
+             xcdot = [vx;vy;omega;net_force;net_torque];
+            dxcdot = findGradient(obj,t,X,u);
+        end
+            
+        function [xcdot, dxcdot] = dynamics(obj,t,X,u)
           
             
             x = X(1);
@@ -107,6 +141,7 @@ classdef PlanarInspector < DrakeSystem
             vx = X(4);
             vy = X(5);
             omega = X(6);
+            
             
             
             R_wb = [cos(theta) -sin(theta); sin(theta) cos(theta)];
@@ -126,7 +161,7 @@ classdef PlanarInspector < DrakeSystem
                 %Coupler coordinates in world frame
                 d_w = R_wb*obj.d(i,1:2)' + [x;y];
                 %gap between sphere and coupler
-                g = sqrt(norm(d_w - obj.sphere_center)^2-obj.sphere_radius^2);
+                g = norm(d_w - obj.sphere_center)-obj.sphere_radius;
                 %normal at nearest point
                 n = (d_w - obj.sphere_radius)/norm(d_w - obj.sphere_radius);
                 %rotation to take world coordinates into plate coordinates
@@ -148,6 +183,19 @@ classdef PlanarInspector < DrakeSystem
             end
             
             xcdot = [vx;vy;omega;net_force;net_torque];
+%             function df = findGradient(obj,t,X,u)
+%                 
+%             end
+            %dxcdot = planarGradients(obj,t,X,u,1);
+            function df = findGradient(obj,t,X,u)
+            df = sparse(size(X,1),size(X,1)+size(t,1)+size(u,1));
+            df(1,5) = 1;
+            df(2,6) = 1;
+            df(3,7) = 1;
+            df(4,8) = 1;
+            df(5,9) = 1;
+            end
+            dxcdot = findGradient(obj,t,X,u);
             
         end
         
@@ -188,13 +236,13 @@ classdef PlanarInspector < DrakeSystem
             prog = DircolTrajectoryOptimization(plant,N,[0.1 10]);
             
             %add initial value constraint
-            x0 = [0;0.1;0;0;0;0];
+            x0 = [0;0.2;0;0;0;0];
             %prog is the constraint function, bounding box constraint
             %binding the system to be between x0 and x0 at the first knot
             prog = addStateConstraint(prog,BoundingBoxConstraint(x0,x0),1);
             
             %add the final value constraint
-            xf = [0;0.11;0;0;0;0];
+            xf = [0;0.2;0;0;0;0];
             prog = addStateConstraint(prog,BoundingBoxConstraint(xf,xf),N);
             
             %add the cost function g(dt,x,u) = 1*dt - cost is only on time

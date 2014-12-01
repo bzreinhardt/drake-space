@@ -27,7 +27,7 @@ d_3=a1.d(3);
 d_4=a1.d(4);
 sphere_center_1=a1.sphere_center(1);
 sphere_center_2=a1.sphere_center(2);
-sphere_radius=a1.sphere();
+sphere_radius=a1.sphere_radius();
 
 
 % Compute Gradients:
