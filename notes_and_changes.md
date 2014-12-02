@@ -48,8 +48,10 @@ T in RigidBodyFrames and RigidBodyObjects is the transform matrix
  *pchipDeriv(t,y,ydot_minus,ydot_plus,dim) @optional ydot_plus,dim finds a cubic spline that fits the input data
   it implements piecewise cubic Hermite polynomials with the derivatives
   % specified.  (e.g., as in Hargraves86).
-  *ypp = foh(t0,y0)
+  *ypp = foh(t0,y0) creates a ppspline of first order derivatives between the specified points
 
   USEFUL FUNCTIONS I DIDN"T KNOW ABOUT
   ====================================
   cumsum(A) - turns vector into cumulative running sum of vector elements
+
+
