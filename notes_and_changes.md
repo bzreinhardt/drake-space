@@ -49,9 +49,24 @@ T in RigidBodyFrames and RigidBodyObjects is the transform matrix
   it implements piecewise cubic Hermite polynomials with the derivatives
   % specified.  (e.g., as in Hargraves86).
   *ypp = foh(t0,y0) creates a ppspline of first order derivatives between the specified points
+*Dircol is order of magnitude faster if you have snopt installed
+* use generateConstraint to turn a constraint into an object that is useful to the TrajectoryOptimization class
+*use prog.addStateConstraint or prog.addInputConstraint to add the generated constraints (prog is the variable name of the TrajectoryOptimization class)
+*use prog.setSolverOptions to set tolerances
+
+Different kinds of constraint objects
+-----------------------------------
+MinDistanceConstraint - works for classes with rigid bodies - keeps distance between bodies greater than min distance
+ConstantConstraint - 
+
+Using PPTrajectories
+===================
 
   USEFUL FUNCTIONS I DIDN"T KNOW ABOUT
   ====================================
   cumsum(A) - turns vector into cumulative running sum of vector elements
+  fileparts(which(mfilename)) - gets a char array of the full path for the file executing the command
 
-
+Using DrakeSystems
+===================
+*use setInputLimits to set input limits throughout the system

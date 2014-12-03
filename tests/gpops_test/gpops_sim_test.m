@@ -28,7 +28,7 @@ auxdata.d = [d1;d2];
 phi = pi/50; %angle to rotate around surface
 t0 = 0;
 tf = 20;
-t_err = 2;
+t_err = 10;
 x0       = 0;  xf       = auxdata.r*sin(phi);
 y0       = 0.1;  yf  = y0 + auxdata.r*cos(phi) - auxdata.r;
 theta0   = 0; thetaf   = -phi;
@@ -112,10 +112,11 @@ setup.guess = guess;
 setup.mesh = mesh;
 
 
-setup.nlp.solver = 'ipopt'; % {'ipopt','snopt'}
+setup.nlp.solver = 'snopt'; % {'ipopt','snopt'}
 setup.nlp.ipoptoptions.maxiterations = 100; 
-setup.nlp.snoptoptions.maxiterations = 300;
+setup.nlp.snoptoptions.maxiterations = 100;
 setup.nlp.ipoptoptions.tolerance = 1e-3;
+setup.nlp.snoptoptions.tolerance = 1e-3;
 
 setup.derivatives.supplier = 'sparseCD';%'sparseFD'; %{'sparseCD';}
 setup.derivatives.derivativelevel = 'second';

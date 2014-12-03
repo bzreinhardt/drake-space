@@ -1,4 +1,7 @@
 function symbolic_gradients(fname,order,varargin)
+%% Find dynamics gradients for a planar induction inspector symbolically
+%based heavily on Drake generateGradients.m which doesn't seem to work for
+%this system
 %varargin {1} needs to be a PlanarBody Inspector
 %2D things
 
@@ -8,20 +11,21 @@ theta = sym('theta');
 vx = sym('vx');
 vy = sym('vy');
 omega = sym('omega');
+d = varargin{1}.d; %replace with object property
 for j=1:size(d,1)
       u(j)=sym(['u',num2str(j)]);
 end
 
 X = [x y theta vx vy omega];
-c = [0;-5];
-r = 5;
-d = [1/2^.5 -1/2^.5; -1/2^.5 -1/2^.5]; %replace with object property
+c = varargin{1}.sphere_center;
+r = varargin{1}.sphere_radius;
+
 
 v = [vx;vy];
 F_tot = 0;
 for i = 1:size(d,1)
     %arm in body coordinates
-    d_b = d(i,:)';
+    d_b = d(i,1:2)';
     d_w = [cos(theta) -sin(theta); sin(theta) cos(theta)]*d_b + [x;y];
     g = sqrt(norm((d_w - c))^2 - r^2);
     n = (d_w-c)/norm(d_w-c);
@@ -35,9 +39,9 @@ for i = 1:size(d,1)
     F_tot = F_tot+F;
 end
 
-dFdu = [sym(zeros(3,size(d,2)));jacobian(F_tot,u)];
-dFdx = [sym(zeros(3,6));jacobian(F,X)];
-dFdt = sym(zeros(6,1));
+dFdu = [sym(zeros(length(X)/2,size(d,1)));jacobian(F_tot,u)];
+dFdx = [sym(zeros(length(X)/2,length(X)));jacobian(F,X)];
+dFdt = sym(zeros(length(X),1));
   
 %find the gradient of the state-transition matrix 
 % Inertia and mass are 1 for now

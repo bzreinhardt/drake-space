@@ -32,7 +32,7 @@ classdef PlanarInspector < DrakeSystem
             obj.d = [d1;d2];
             
             %constrained inputs
-            %obj.setInputLimits(-1000,1000);
+            obj.setInputLimits(-5000,5000);
             
             obj.bounding_sphere = max(sqrt(sum(obj.d.^2,2)));
             load('coupler_splines.mat');
@@ -195,7 +195,8 @@ classdef PlanarInspector < DrakeSystem
             df(4,8) = 1;
             df(5,9) = 1;
             end
-            dxcdot = findGradient(obj,t,X,u);
+            %dxcdot = findGradient(obj,t,X,u);
+            dxcdot = planarInspectorGradients(obj,t,X,u,1);
             
         end
         
@@ -228,21 +229,22 @@ classdef PlanarInspector < DrakeSystem
         
     end
     methods (Static = true)
-        function runDircol
-            plant = PlanarInspector;
+        function output = runDircol
             
+            plant = PlanarInspector;
+            t_guess = 25;
             N = 20;
             %[0.1 10] are bounds on the duration
             prog = DircolTrajectoryOptimization(plant,N,[0.1 10]);
             
             %add initial value constraint
-            x0 = [0;0.2;0;0;0;0];
+            x0 = [0;0.21;0;0;0;0];
             %prog is the constraint function, bounding box constraint
             %binding the system to be between x0 and x0 at the first knot
             prog = addStateConstraint(prog,BoundingBoxConstraint(x0,x0),1);
             
             %add the final value constraint
-            xf = [0;0.2;0;0;0;0];
+            xf = [0.1;0.21;0;0;0;0];
             prog = addStateConstraint(prog,BoundingBoxConstraint(xf,xf),N);
             
             %add the cost function g(dt,x,u) = 1*dt - cost is only on time
@@ -256,12 +258,24 @@ classdef PlanarInspector < DrakeSystem
             % add a display function to draw the trajectory on every iteration
             function displayStateTrajectory(t,x,u)
                 plot(x(1,:),x(2,:),'b.-','MarkerSize',10);
-                axis([-5,1,-2.5,2.5]); axis equal;
+                axis([-0.1,0.1,0,0.3]); axis equal;
                 drawnow;
             end
             prog = addTrajectoryDisplayFunction(prog,@displayStateTrajectory);
-            
-            [xtraj,	utraj, z,F,	info, infeasible_constraint_name] = prog.solveTraj(2);
+            tic;
+            if nargout > 0
+            [xtraj,	utraj, z,F,	info, infeasible_constraint_name] = prog.solveTraj(t_guess);
+             output.xtraj = xtraj;
+            output.utraj = utraj;
+            output.z = z;
+            output.F = F;
+            output.info = info;
+            output.infeasible_constraint_name = infeasible_constraint_name;
+            else
+                prog.solveTraj(t_guess);
+            end
+            toc;
+           
         end
         
         function runOL
