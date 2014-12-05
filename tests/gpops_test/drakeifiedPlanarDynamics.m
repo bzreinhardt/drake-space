@@ -1,4 +1,4 @@
-function phaseout = drakeifiedPlanarDynamics(input)
+function [out1, out2] = drakeifiedPlanarDynamics(varargin)
 %@param coupler_model_structs are the structs with the planar behavior of
 %the induction couplers
 
@@ -6,6 +6,8 @@ function phaseout = drakeifiedPlanarDynamics(input)
 
 %All inputs are MxN vectors with M time steps and N channels
 
+if nargin < 2
+    input = varargin{1};
 auxdata = input.auxdata;
 radius = auxdata.r;
 center = auxdata.c;
@@ -19,14 +21,30 @@ vx    = input.phase.state(:,4);
 vy    = input.phase.state(:,5);
 omega = input.phase.state(:,6);
 u     = input.phase.control;
-u1    = input.phase.control(:,1);
-u2    = input.phase.control(:,2);
 
+else
+    obj = varargin{1};
+    t = varargin{2};
+    X = varargin{3};
+    u = varargin{4};
+    if size(u,1) == obj.getNumInputs
+        u = u';
+    end
+    d = obj.d;
+    center = obj.sphere_center;
+    radius = obj.sphere_radius;
+    x = X(1);
+    y = X(2);
+    theta = X(3);
+    vx = X(4);
+    vy = X(5);
+    omega = X(6);
+end
 net_force_x = zeros(size(vx));
 net_force_y = zeros(size(vy));
 net_torque = zeros(size(omega));
 d_w = zeros(size(theta,1),2);
-for i = 1:size(a,1)
+for i = 1:size(d,1)
     %find coupler positions in world coordinates
     d_w(:,1) = d(i,1)*cos(theta)-d(i,2)*sin(theta)+x;
     d_w(:,2) = d(i,1)*sin(theta)+d(i,2)*cos(theta)+y;
@@ -44,8 +62,8 @@ for i = 1:size(a,1)
    
     force_x = -surf_norm(:,2).*fx + surf_norm(:,1).*fy;
     force_y = surf_norm(:,1).*fx + surf_norm(:,2).*fy;
-    torque = -(d(i,1)*sin(theta)+d(i,2)*cos(theta)).*force_x + ...
-        (d(i,1)*cos(theta)-d(i,2)*sin(theta)).*force_y;
+    torque = -d_w(:,2).*force_x + ...
+        d_w(:,1).*force_y;
     
     net_force_x = net_force_x + force_x;
     net_force_y = net_force_y + force_y;
@@ -59,9 +77,22 @@ vxdot = net_force_x;
 vydot = net_force_y;
 omegadot = net_torque;
 
+if nargin == 1 
+    
 phaseout.dynamics = [xdot, ydot, thetadot, vxdot, vydot, omegadot];
 %phaseout.path = (x-SPHERE_CENTER(1)).^2 + (y - SPHERE_CENTER(1)).^2; 
 phaseout.path = (x-center(1)).^2+(y-center(2)).^2;
-phaseout.integrand = 0.001*sqrt(u1.^2 + u2.^2);
+%phaseout.integrand = 0.001*sqrt(u1.^2 + u2.^2)+0.001*(u1.^2.+u2.^2).*input.phase.time;
+phaseout.integrand = 0.001*(sum(u.^2,2));
+out1 = phaseout;
+else
+    out1 = [xdot, ydot, thetadot, vxdot, vydot, omegadot]';
+    if nargout > 1
+    %out2 = planarInspectorGradients(obj,t,X,u',1);
+    out2 = ones(obj.getNumStates,1+obj.getNumStates+obj.getNumInputs);
+    end
+end
+
+
 
 end

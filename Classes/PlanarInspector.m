@@ -17,124 +17,46 @@ classdef PlanarInspector < DrakeSystem
     
     methods
         %constructor
-        function obj = PlanarInspector()
-            num_xc = 6;
-            num_xd = 0;
-            num_u = 2;
-            obj@DrakeSystem(num_xc,num_xd,num_u,num_xc,false,true);
+        function obj = PlanarInspector(a,d)
             %set up couplers
+            if nargin < 2
             d1 = 0.1*[1/2^.5,-1/2^.5,0];
             d2 = 0.1*[-1/2^.5,-1/2^.5,0];
+            
+            d = [d1;d2];
+            end
+            if nargin < 1
             a1 = [0,0,1];
             a2 = [0,0,1];
+            a = [a1;a2];
+            end
+            num_xc = 6;
+            num_xd = 0;
+            num_u = size(a,1);
+            obj@DrakeSystem(num_xc,num_xd,num_u,num_xc,false,true);
+            obj.a = a;
+            obj.d = d;
             
-            obj.a = [a1;a2];
-            obj.d = [d1;d2];
+            
+            
             
             %constrained inputs
             obj.setInputLimits(-5000,5000);
             
             obj.bounding_sphere = max(sqrt(sum(obj.d.^2,2)));
-            load('coupler_splines.mat');
-            obj.fx_spline = f_x_spline;
-            obj.fy_spline = f_y_spline;
+%             load('coupler_splines.mat');
+%             obj.fx_spline = f_x_spline;
+%             obj.fy_spline = f_y_spline;
+            obj = obj.setOutputFrame(obj.getStateFrame);
             
         end
         
-        function xcdot = oldDynamics(obj,t,X,u)
-            x = X(1,:)';
-            y = X(2,:)';
-            theta = X(3,:)';
-            vx = X(4,:)';
-            vy = X(5,:)';
-            omega = X(6,:)';
-            u = u';
-            
-            % TODO add in velocity dynamics - ignore for now
-            vx_plate = zeros(size(vx));
-            vy_plate = zeros(size(vy));
-            
-            
-            net_force_x = zeros(size(vx));
-            net_force_y = zeros(size(vy));
-            net_torque = zeros(size(omega));
-            %cycle through the forces and torques from each coupler
-            
-            for i = 1:size(obj.a,1)
-                %find coupler positions in world coordinates
-                coupler_x = obj.d(i,1)*cos(theta)-obj.d(i,2)*sin(theta)+x;
-                coupler_y = obj.d(i,1)*sin(theta)+obj.d(i,2)*cos(theta)+y;
-                
-                [g,surf_norm] = obj.sphereNormGap([coupler_x,coupler_y]);
-                
-                if any(any(isnan([g,vx_plate,vy_plate,u(:,i)])))
-                    fx = NaN*net_force_x;
-                    fy = NaN*net_force_y;
-                else
-                    fx = fnval(obj.fx_spline,[vx_plate,vy_plate,g,u(:,i)]')';
-                    fy = fnval(obj.fy_spline,[vx_plate,vy_plate,g,u(:,i)]')';
-                end
-                
-                force_x = -surf_norm(:,2).*fx + surf_norm(:,1).*fy;
-                force_y = surf_norm(:,1).*fx + surf_norm(:,2).*fy;
-                torque = -(obj.d(i,1)*sin(theta)+obj.d(i,2)*cos(theta)).*force_x + ...
-                    (obj.d(i,1)*cos(theta)-obj.d(i,2)*sin(theta)).*force_y;
-                
-                net_force_x = net_force_x + force_x;
-                net_force_y = net_force_y + force_y;
-                net_torque = net_torque + torque;
-            end
-            
-            xcdot = zeros(size(X));
-            xcdot(1,:) = vx';
-            xcdot(2,:) = vy';
-            xcdot(3,:) = omega';
-            xcdot(4,:) = net_force_x';
-            xcdot(5,:) = net_force_y';
-            xcdot(6,:) = net_torque';
-            if ~isequal(size(xcdot),[6,1])
-                disp('xcdot size ');
-                disp(size(xcdot));
-            end
-        end
-        %Attempt at drake gradientalizable dynamics
-        
-        function [xcdot, dxcdot] = simpleDynamics(obj,t,X,u)
-             x = X(1);
-            y = X(2);
-            theta = X(3);
-            vx = X(4);
-            vy = X(5);
-            omega = X(6);
-            u1 = u(1);
-            u2 = u(2);
-            
-            d = [0,-0.1];
-            
-            R_wb = [cos(theta) -sin(theta); sin(theta) cos(theta)];
-            
-             net_force = [u1];
-            
-            net_torque = 0;
-            
-            function df = findGradient(obj,t,X,u)
-            df = sparse(size(X,1),size(X,1)+size(t,1)+size(u,1));
-            df(1,5) = 1;
-            df(2,6) = 1;
-            df(3,7) = 1;
-            df(4,8) = 1;
-            df(5,9) = 1;
-            end
-        
-      
-            
-             xcdot = [vx;vy;omega;net_force;net_torque];
-            dxcdot = findGradient(obj,t,X,u);
-        end
-            
         function [xcdot, dxcdot] = dynamics(obj,t,X,u)
-          
+            [xcdot, dxcdot] = drakeifiedPlanarDynamics(obj,t,X,u);
+        end
             
+        function [xcdot, dxcdot] = old_dynamics(obj,t,X,u)
+          
             x = X(1);
             y = X(2);
             theta = X(3);
@@ -142,12 +64,7 @@ classdef PlanarInspector < DrakeSystem
             vy = X(5);
             omega = X(6);
             
-            
-            
             R_wb = [cos(theta) -sin(theta); sin(theta) cos(theta)];
-            
-            
-            
             
             net_force = zeros(2,1);
             
@@ -161,7 +78,11 @@ classdef PlanarInspector < DrakeSystem
                 %Coupler coordinates in world frame
                 d_w = R_wb*obj.d(i,1:2)' + [x;y];
                 %gap between sphere and coupler
+                try
                 g = norm(d_w - obj.sphere_center)-obj.sphere_radius;
+                catch
+                    disp('norm not working');
+                end
                 %normal at nearest point
                 n = (d_w - obj.sphere_radius)/norm(d_w - obj.sphere_radius);
                 %rotation to take world coordinates into plate coordinates
@@ -227,6 +148,49 @@ classdef PlanarInspector < DrakeSystem
             y = x;
         end
         
+        function [c,V] = findLQR(obj,x0)
+            %Generates an lqr controller for the inspector around a given
+            %point
+            x0 = Point(obj.getStateFrame,x0);
+            u0 = Point(obj.getInputFrame,zeros(getNumInputs(obj),1));
+            Q = 1E-2*diag([1 1 1 0.1 0.1 0.1]);
+            R = 1E-5*diag([0.1;0.1]);
+            if (nargout>1)
+                [c,V0] = tilqr(obj,x0,u0,Q,R);
+                sys = feedback(obj,c);
+                
+                pp = sys.taylorApprox(0,x0,[],3);  % make polynomial approximation
+                options=struct();
+                options.degL1=2;
+                %options.method='bilinear';
+                %options.degV=4;
+                V=regionOfAttraction(pp,V0,options);
+            else
+                c = tilqr(obj,x0,u0,Q,R);
+            end
+        end
+        
+                function [ytraj,xtraj] = runOL(obj,utraj,x0)
+            
+            v = PlanarInspectVisualizer(obj);
+            if nargin < 2
+            x0 = Point(getStateFrame(obj),[0;0.1;0;0;0;0]);
+            end
+            if nargin < 1
+            u0 = Point(getInputFrame(obj),[0.15;-0.15]);
+            sys = cascade(ConstantTrajectory(u0),obj);
+            tspan = [0 20];
+            else
+                utraj = utraj.setOutputFrame(getInputFrame(obj));
+                sys = cascade(utraj,obj);
+                tspan = utraj.getTimeSpan();
+            end
+            
+            [ytraj,xtraj] = simulate(sys,tspan,x0);
+            v.playback(xtraj);
+            
+        end
+        
     end
     methods (Static = true)
         function output = runDircol
@@ -278,9 +242,10 @@ classdef PlanarInspector < DrakeSystem
            
         end
         
-        function runOL
-            
-        end
+
+        
+        
+      
     end
     
 end

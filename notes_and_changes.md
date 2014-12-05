@@ -61,12 +61,21 @@ ConstantConstraint -
 
 Using PPTrajectories
 ===================
+4 *Note that the inheretence for pptrajectories is:
+ 65 PPTrajectory < Trajectory <DrakeSystem <DynamicalSystem
+  66 so when they are put into a system with a DrakeSystem, the whole system main
+      tains the utility of a drakesystem.
 
-  USEFUL FUNCTIONS I DIDN"T KNOW ABOUT
+USEFUL FUNCTIONS I DIDN"T KNOW ABOUT
   ====================================
   cumsum(A) - turns vector into cumulative running sum of vector elements
   fileparts(which(mfilename)) - gets a char array of the full path for the file executing the command
+*sfigure - creates a figure without stealing focus
 
 Using DrakeSystems
 ===================
 *use setInputLimits to set input limits throughout the system
+
+BUGS
+=======
+TaylorVar throws an error when you try to .^ a 2x1 TaylorVar

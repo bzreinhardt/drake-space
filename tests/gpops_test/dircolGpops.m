@@ -1,3 +1,4 @@
+function output = dircolGpops(obj,options)
 %------------------- Induction Inspector Path --------------------%
 %                                      %
 %-----------------------------------------------------------------%
@@ -7,28 +8,25 @@
 % ------------------------------------------------------------- %
 
 %Total time with spline evaluations 95 s
-load('coupler_splines.mat');
-auxdata.fx = f_x_spline; % x force spline from coupler
-auxdata.fy = f_y_spline; % y force spline from coupler
-auxdata.r = 5; %sphere radius
-auxdata.c = [0;-5];
+% load('coupler_splines.mat');
+% auxdata.fx = f_x_spline; % x force spline from coupler
+% auxdata.fy = f_y_spline; % y force spline from coupler
+auxdata.r = obj.sphere_radius; %sphere radius
+auxdata.c = obj.sphere_center;
 auxdata.gamma = 1;
 
-d1 = 0.1*[1/2^.5,-1/2^.5,0];
-d2 = 0.1*[-1/2^.5,-1/2^.5,0];
-a1 = [0,0,1];
-a2 = [0,0,1];
 
-auxdata.a = [a1;a2];
-auxdata.d = [d1;d2];
+auxdata.a = obj.a;
+auxdata.d = obj.d;
 
 % --------------------------------------------------------------%
 %           Set up bounds on state, control, and time           %
 % --------------------------------------------------------------%
 phi = pi/50; %angle to rotate around surface
 t0 = 0;
-tf = 20;
+tf = 30;
 t_err = 10;
+x_err = [0.01;0.01;0.01;0;0;0];
 % % final conditions for rotating around surface
 % x0       = 0;  xf       = auxdata.r*sin(phi);
 % y0       = 0.1;  yf  = y0 + auxdata.r*cos(phi) - auxdata.r;
@@ -36,11 +34,29 @@ t_err = 10;
 % %
 
 x0       = 0;     xf      = 0.1;
-y0       = 0.2;  yf        = 0.2;
+y0       = 0.21;  yf        = 0.21;
 theta0   = 0;     thetaf  = 0;  
 vx0      = 0;    vxf      = 0;
 vy0      = 0;    vyf      = 0;
 omega0   = 0;    omegaf   = 0;
+
+if isfield(options,'x0')
+    x0 = options.x0(1);
+    y0 = options.x0(2);
+    theta0 = options.x0(3);
+    vx0 = options.x0(4);
+    vy0 = options.x0(5);
+    omega0 = options.x0(6);
+    
+end
+if isfield(options,'xf')
+     xf = options.xf(1);
+    yf = options.xf(2);
+    thetaf = options.xf(3);
+    vxf = options.xf(4);
+    vyf = options.xf(5);
+    omegaf = options.xf(6);
+end
 
 xmin     = -3; xmax     = 3;
 ymin     = -3; ymax     = 3;
@@ -54,8 +70,7 @@ omegamin = -1;  omegamax = 1;
 % use this formulation it is necessary to include the 
 % control constraints ui>=0 (i=1,...4) along with the 
 % path constraints u1+u2<=1 and u3+u4<=1.
-u1Min = -1000; u1Max = 1000;
-u2Min = -1000; u2Max = 1000;
+u_min = -5000; u_max = 5000;
 
 bounds.phase.initialtime.lower = t0;
 bounds.phase.initialtime.upper = t0;
@@ -66,10 +81,10 @@ bounds.phase.initialstate.lower = [x0,y0,theta0,vx0,vy0,omega0];
 bounds.phase.initialstate.upper = [x0,y0,theta0,vx0,vy0,omega0];
 bounds.phase.state.lower        = [xmin,ymin,thetamin,vxmin,vymin,omegamin];
 bounds.phase.state.upper        = [xmax,ymax,thetamax,vxmax,vymax,omegamax];
-bounds.phase.finalstate.lower   = [xf,yf,thetaf,vxf,vyf,omegaf];
-bounds.phase.finalstate.upper   = [xf,yf,thetaf,vxf,vyf,omegaf];
-bounds.phase.control.lower = [u1Min,u2Min];
-bounds.phase.control.upper = [u1Max,u2Max];
+bounds.phase.finalstate.lower   = [xf,yf,thetaf,vxf,vyf,omegaf]-x_err';
+bounds.phase.finalstate.upper   = [xf,yf,thetaf,vxf,vyf,omegaf]+x_err';
+bounds.phase.control.lower = ones(1,obj.getNumInputs)*u_min;
+bounds.phase.control.upper = ones(1,obj.getNumInputs)*u_max;
 %TODO look up what these represent
 bounds.phase.integral.lower = 0;
 bounds.phase.integral.upper = 1000000000;
@@ -85,16 +100,15 @@ thetaGuess = [theta0; thetaf];
 vxGuess    = [vx0; vxf];
 vyGuess    = [vy0; vyf];
 omegaGuess = [omega0; omegaf];
-u1Guess    = [0; 0];
-u2Guess    = [0; 0];
+u_guess = zeros(2,obj.getNumInputs);
 
 guess.phase.time = tGuess;
 guess.phase.state = [xGuess,yGuess,thetaGuess,vxGuess,vyGuess,omegaGuess];
-guess.phase.control = [u1Guess,u2Guess];
+guess.phase.control = u_guess;
 guess.phase.integral = 0;
 
 mesh.method = 'hp-PattersonRao'; %'hp-LiuRao';
-mesh.tolerance = 1e-3; 
+mesh.tolerance = 1e-2; 
 mesh.maxiteration = 1;
 mesh.colpointsmin = 3;
 mesh.colpointsmax = 10;
