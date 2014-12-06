@@ -68,7 +68,7 @@ classdef PlanarInspectVisualizer < Visualizer
       title(['t = ', num2str(t(1),'%.2f') ' sec']);
       %set(gca,'XTick',[],'YTick',[])
       
-      axis image; axis([-0.7 0.7 -0.1 1.0]);
+      axis image; axis([-0.3 0.3 -0.1 0.5]);
       drawnow;
     end    
   end

@@ -83,7 +83,7 @@ phaseout.dynamics = [xdot, ydot, thetadot, vxdot, vydot, omegadot];
 %phaseout.path = (x-SPHERE_CENTER(1)).^2 + (y - SPHERE_CENTER(1)).^2; 
 phaseout.path = (x-center(1)).^2+(y-center(2)).^2;
 %phaseout.integrand = 0.001*sqrt(u1.^2 + u2.^2)+0.001*(u1.^2.+u2.^2).*input.phase.time;
-phaseout.integrand = 0.001*(sum(u.^2,2));
+phaseout.integrand = 0.01*(sum(u.^2,2));
 out1 = phaseout;
 else
     out1 = [xdot, ydot, thetadot, vxdot, vydot, omegadot]';

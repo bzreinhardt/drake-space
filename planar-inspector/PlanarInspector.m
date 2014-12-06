@@ -41,7 +41,7 @@ classdef PlanarInspector < DrakeSystem
             
             
             %constrained inputs
-            obj.setInputLimits(-5000,5000);
+            obj= obj.setInputLimits(-5000,5000);
             
             obj.bounding_sphere = max(sqrt(sum(obj.d.^2,2)));
 %             load('coupler_splines.mat');
@@ -51,9 +51,16 @@ classdef PlanarInspector < DrakeSystem
             
         end
         
-        function [xcdot, dxcdot] = dynamics(obj,t,X,u)
-            [xcdot, dxcdot] = drakeifiedPlanarDynamics(obj,t,X,u);
-        end
+         function [xcdot, dxcdot] = dynamics(obj,t,X,u)
+             [xcdot] = drakeifiedPlanarDynamics(obj,t,X,u);
+             [dxcdot] = planarJacobian(X(3),u(1),u(2),u(3),X(1),X(2));
+         end
+         
+         function generateGradients(obj)
+             filename = 'planarJacobian.m';
+             generateInspectorGradients(obj,filename);
+         end
+             
             
         function [xcdot, dxcdot] = old_dynamics(obj,t,X,u)
           
@@ -117,7 +124,8 @@ classdef PlanarInspector < DrakeSystem
             df(5,9) = 1;
             end
             %dxcdot = findGradient(obj,t,X,u);
-            dxcdot = planarInspectorGradients(obj,t,X,u,1);
+            %dxcdot = planarInspectorGradients(obj,t,X,u,1);
+            dxcdot = ones(obj.getNumStates,1+obj.getNumStates+obj.getNumInputs);
             
         end
         
@@ -148,13 +156,17 @@ classdef PlanarInspector < DrakeSystem
             y = x;
         end
         
-        function [c,V] = findLQR(obj,x0)
+        function [c,V] = findLQR(obj,x0,u0)
             %Generates an lqr controller for the inspector around a given
             %point
             x0 = Point(obj.getStateFrame,x0);
+            if nargin < 3
             u0 = Point(obj.getInputFrame,zeros(getNumInputs(obj),1));
-            Q = 1E-2*diag([1 1 1 0.1 0.1 0.1]);
-            R = 1E-5*diag([0.1;0.1]);
+            else
+                u0 = Point(obj.getInputFrame,u0);
+            end
+            Q = diag([100000000 100000000 1000000 0.1 0.1 0.1]);
+            R = eye(obj.getNumInputs);
             if (nargout>1)
                 [c,V0] = tilqr(obj,x0,u0,Q,R);
                 sys = feedback(obj,c);
@@ -170,16 +182,28 @@ classdef PlanarInspector < DrakeSystem
             end
         end
         
-                function [ytraj,xtraj] = runOL(obj,utraj,x0)
+        function [c,V] = findTVLQR(obj,xtraj,utraj)
+            %Generates an lqr controller for the inspector around a given
+            %point
+            xtraj = setOutputFrame(xtraj,getStateFrame(obj));
+            utraj = setOutputFrame(utraj,getInputFrame(obj));
+            Q = diag([100000000 100000000 100000 1 1 0.1]);
+            R = eye(obj.getNumInputs);
+            Qf=0.001*diag([(1/0.05)^2 (1/0.05)^2 (1/3)^2 (1/3)^2 1 (1/3)^2]);
+            c = tvlqr(obj,xtraj,utraj,Q,R,Qf);
+        end
+        
+        
+        function [ytraj,xtraj] = runOL(obj,utraj,x0)
             
             v = PlanarInspectVisualizer(obj);
             if nargin < 2
-            x0 = Point(getStateFrame(obj),[0;0.1;0;0;0;0]);
+                x0 = Point(getStateFrame(obj),[0;0.1;0;0;0;0]);
             end
             if nargin < 1
-            u0 = Point(getInputFrame(obj),[0.15;-0.15]);
-            sys = cascade(ConstantTrajectory(u0),obj);
-            tspan = [0 20];
+                u0 = Point(getInputFrame(obj),[0.15;-0.15]);
+                sys = cascade(ConstantTrajectory(u0),obj);
+                tspan = [0 20];
             else
                 utraj = utraj.setOutputFrame(getInputFrame(obj));
                 sys = cascade(utraj,obj);
@@ -187,35 +211,32 @@ classdef PlanarInspector < DrakeSystem
             end
             
             [ytraj,xtraj] = simulate(sys,tspan,x0);
-            v.playback(xtraj);
+            %v.playback(xtraj);
             
         end
         
-    end
-    methods (Static = true)
-        function output = runDircol
-            
-            plant = PlanarInspector;
-            t_guess = 25;
-            N = 20;
+         function output = runDircol(obj)
+       
+            t_guess = 30;
+            N = 30;
             %[0.1 10] are bounds on the duration
-            prog = DircolTrajectoryOptimization(plant,N,[0.1 10]);
+            prog = DircolTrajectoryOptimization(obj,N,[0.1 50]);
             
             %add initial value constraint
-            x0 = [0;0.21;0;0;0;0];
+            x0 = [0;0.15;0;0;0;0];
             %prog is the constraint function, bounding box constraint
             %binding the system to be between x0 and x0 at the first knot
             prog = addStateConstraint(prog,BoundingBoxConstraint(x0,x0),1);
             
             %add the final value constraint
-            xf = [0.1;0.21;0;0;0;0];
+            xf = [0;0.1;0;0;0;0];
             prog = addStateConstraint(prog,BoundingBoxConstraint(xf,xf),N);
             
             %add the cost function g(dt,x,u) = 1*dt - cost is only on time
             
             % add the cost function g(dt,x,u) = 1*dt
             function [g,dg] = cost(dt,x,u)
-                g = dt; dg = [1,0*x',0*u']; % see geval.m for our gradient format
+                g = dt + u'*u; dg = [1,0*x',2*u']; % see geval.m for our gradient format
             end
             prog = addRunningCost(prog,@cost);
             
@@ -228,24 +249,28 @@ classdef PlanarInspector < DrakeSystem
             prog = addTrajectoryDisplayFunction(prog,@displayStateTrajectory);
             tic;
             if nargout > 0
-            [xtraj,	utraj, z,F,	info, infeasible_constraint_name] = prog.solveTraj(t_guess);
-             output.xtraj = xtraj;
-            output.utraj = utraj;
-            output.z = z;
-            output.F = F;
-            output.info = info;
-            output.infeasible_constraint_name = infeasible_constraint_name;
+                [xtraj,	utraj, z,F,	info, infeasible_constraint_name] = prog.solveTraj(t_guess);
+                output.xtraj = xtraj;
+                output.utraj = utraj;
+                output.z = z;
+                output.F = F;
+                output.info = info;
+                output.infeasible_constraint_name = infeasible_constraint_name;
             else
                 prog.solveTraj(t_guess);
             end
             toc;
-           
+            
         end
         
-
+    end
+    methods (Static = true)
+       
         
         
-      
+        
+        
+        
     end
     
 end
