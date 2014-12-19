@@ -1,7 +1,6 @@
 classdef InductionCouplerModel 
-    %UNTITLED4 Summary of this class goes here
-    %   Detailed explanation goes here
-    
+ % Different functions for modeling the behavior of Induction couplers that
+ % use eddy current forces
    
     
     methods

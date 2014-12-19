@@ -1,4 +1,4 @@
-function output = dircolGpops(obj,options)
+function output = dircolGpops(obj,opts)
 %------------------- Induction Inspector Path --------------------%
 %                                      %
 %-----------------------------------------------------------------%
@@ -24,22 +24,26 @@ auxdata.d = obj.d;
 % --------------------------------------------------------------%
 phi = pi/50; %angle to rotate around surface
 t0 = 0;
-tf = 30;
+tf = 50;
 t_err = 10;
 x_err = [0.001;0.001;0.001;0;0;0];
 % % final conditions for rotating around surface
-% x0       = 0;  xf       = auxdata.r*sin(phi);
-% y0       = 0.1;  yf  = y0 + auxdata.r*cos(phi) - auxdata.r;
-% theta0   = 0; thetaf   = -phi;
+x0       = 0;  xf       = auxdata.r*sin(phi);
+y0       = 0.1;  yf  = y0 + auxdata.r*cos(phi) - auxdata.r;
+theta0   = 0; thetaf   = -phi;
 % %
 
-x0       = 0;     xf      = 0.1;
-y0       = 0.21;  yf        = 0.21;
-theta0   = 0;     thetaf  = 0;  
+% x0       = 0;     xf      = 0.1;
+% y0       = 0.21;  yf        = 0.21;
+% theta0   = 0;     thetaf  = 0;  
 vx0      = 0;    vxf      = 0;
 vy0      = 0;    vyf      = 0;
 omega0   = 0;    omegaf   = 0;
-
+if nargin > 1
+    options = opts;
+else
+    options = struct();
+end
 if isfield(options,'x0')
     x0 = options.x0(1);
     y0 = options.x0(2);
@@ -70,7 +74,7 @@ omegamin = -1;  omegamax = 1;
 % use this formulation it is necessary to include the 
 % control constraints ui>=0 (i=1,...4) along with the 
 % path constraints u1+u2<=1 and u3+u4<=1.
-u_min = -5000; u_max = 5000;
+u_min = -10000; u_max = 10000;
 
 bounds.phase.initialtime.lower = t0;
 bounds.phase.initialtime.upper = t0;

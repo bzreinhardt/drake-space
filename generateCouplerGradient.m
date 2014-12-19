@@ -1,15 +1,8 @@
-function generateInspectorGradients(p,filename)
-%Generates a function that solves for the gradients of the system
+function generateCouplerGradient(p,filename)
+%Finds the system gradients for a single induction coupler
 %todo, update to create function interface that is more useful 
-
-%derived from the generateGradients drake function which fails on the
-%planar inspector model
 t = sym('t');
 d = p.d;
-num_states = p.getNumStates;
-num_inputs = p.getNumInputs;
-
-
 
 center = p.sphere_center;
 radius = p.sphere_radius;
@@ -59,5 +52,3 @@ xdot = sym([zeros(3) eye(3);zeros(3,6)])*state + [sym(zeros(3,1));net_force_x;ne
 
 dxdot = [jacobian(xdot,t),jacobian(xdot,state),jacobian(xdot,u)];
 matlabFunction(dxdot,'file',filename);
-
-

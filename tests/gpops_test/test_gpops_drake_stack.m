@@ -13,8 +13,8 @@ a = [a1;a2;a3];
 
 
 p = PlanarInspector(a,d);
-options.x0 = x0; options.xf = xf;
-simulation = @()dircolGpops(p,options);
+%options.x0 = x0; options.xf = xf;
+simulation = @()dircolGpops(p);
 
 gpops_output = feval(simulation);
 

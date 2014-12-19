@@ -2,10 +2,10 @@ classdef PlanarInspector < DrakeSystem
     %Planar dynamics of a two coupler induction inspector
     
     properties
+        % properties of the sphere to maneuver around
         sphere_radius = 5;
         sphere_center = [0;-5];
-        fx_spline; %coupler x force spline
-        fy_spline; %coupler y force spline
+       
         d; %coupler positions in body coordinates
         a; %coupler axes in body coordinates
         bounding_sphere;
@@ -20,35 +20,33 @@ classdef PlanarInspector < DrakeSystem
         function obj = PlanarInspector(a,d)
             %set up couplers
             if nargin < 2
-            d1 = 0.1*[1/2^.5,-1/2^.5,0];
-            d2 = 0.1*[-1/2^.5,-1/2^.5,0];
+            d1 = 0.1*[1/2^.5;-1/2^.5;0];
+            d2 = 0.1*[-1/2^.5;-1/2^.5;0];
+            d3 = 0.1*[0; -1; 0];
             
-            d = [d1;d2];
+            d = [d1,d2,d3];
             end
             if nargin < 1
-            a1 = [0,0,1];
-            a2 = [0,0,1];
-            a = [a1;a2];
+            a1 = [0;0;1];
+            a2 = [0;0;1];
+            a3 = [0;0;1];
+            a = [a1,a2,a3];
             end
+            %6 continuous states
             num_xc = 6;
+            % no discrete states
             num_xd = 0;
-            num_u = size(a,1);
+            num_u = size(a,2);
             obj@DrakeSystem(num_xc,num_xd,num_u,num_xc,false,true);
             obj.a = a;
             obj.d = d;
-            
-            
-            
             
             %constrained inputs
             obj= obj.setInputLimits(-5000,5000);
             
             obj.bounding_sphere = max(sqrt(sum(obj.d.^2,2)));
-%             load('coupler_splines.mat');
-%             obj.fx_spline = f_x_spline;
-%             obj.fy_spline = f_y_spline;
+            %full state feedback
             obj = obj.setOutputFrame(obj.getStateFrame);
-            
         end
         
          function [xcdot, dxcdot] = dynamics(obj,t,X,u)
@@ -56,7 +54,7 @@ classdef PlanarInspector < DrakeSystem
              [dxcdot] = planarJacobian(X(3),u(1),u(2),u(3),X(1),X(2));
          end
          
-         function generateGradients(obj)
+         function generatePlanarGradients(obj)
              filename = 'planarJacobian.m';
              generateInspectorGradients(obj,filename);
          end

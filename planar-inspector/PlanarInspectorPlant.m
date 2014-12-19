@@ -1,5 +1,6 @@
 classdef PlanarInspectorPlant < SecondOrderSystem
-
+%NOT UP TO SCRATCH - a secondordersystem implementation of PlanarInspector
+% REDO LATER
   % state:  
   %  q(1) - x position
   %  q(2) - z position
