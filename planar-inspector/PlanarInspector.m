@@ -9,6 +9,7 @@ classdef PlanarInspector < DrakeSystem
         d; %coupler positions in body coordinates
         a; %coupler axes in body coordinates
         bounding_sphere;
+        couplers; % couplers on the inspector
         % These coefficients come from a fit in PolyForceFits.m. They are
         % reasonably good fits for medium-sized induction couplers
 %         f_x = @(u,g)(-5.6219e-08.*u.^3+6.2003e-06.*u.^2+76.0622.*u).*6.2003e-06.*exp(-44.1463.*g)
@@ -23,7 +24,6 @@ classdef PlanarInspector < DrakeSystem
             d1 = 0.1*[1/2^.5;-1/2^.5;0];
             d2 = 0.1*[-1/2^.5;-1/2^.5;0];
             d3 = 0.1*[0; -1; 0];
-            
             d = [d1,d2,d3];
             end
             if nargin < 1
@@ -50,9 +50,16 @@ classdef PlanarInspector < DrakeSystem
         end
         
          function [xcdot, dxcdot] = dynamics(obj,t,X,u)
-             [xcdot] = drakeifiedPlanarDynamics(obj,t,X,u);
-             [dxcdot] = planarJacobian(X(3),u(1),u(2),u(3),X(1),X(2));
+             net_xcdot = zeros(size(X));
+             if nargout > 1
+                dxcdot = sparse(size(X,1),size(t,1)+size(X,1)+size(u,1));
+             end
+             
+                 %find coupler in global frame 
+                 xcdot = drakeifiedPlanarDynamics(obj,t,X,u);
+                dxcdot = planarJacobian(X(3),u(1),u(2),u(3),X(1),X(2));
          end
+         
          
          function generatePlanarGradients(obj)
              filename = 'planarJacobian.m';
