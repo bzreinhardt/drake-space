@@ -1,3 +1,9 @@
+Magnetics Toolbox
+=================
+Field visualizer
+RigidBodyForceElement 
+
+
 Modifty getB@NonlinRB
 See where getB is called
 
