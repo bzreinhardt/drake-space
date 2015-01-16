@@ -37,7 +37,7 @@ end
 
 if strcmp('rand',method)
     for i = 1:numel(template)
-        parmas(i) = (max(i)-min(i))*rand(1)+min(i);
+        params(i) = (max(i)-min(i))*rand(1)+min(i);
     end
 else
 end

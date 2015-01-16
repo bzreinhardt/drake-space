@@ -119,7 +119,7 @@ classdef ControlRegion < DrakeSystem
                 options.color = 'g';
             end
             if isa(obj.V,'LyapunovFunction')
-                y = getProjection(V);
+                y = getProjection(obj.V, 0,zeros(size(obj.x0)),options.dims);
             elseif isa(obj.V,'msspoly')
                 y = getProjection(obj.x,obj.V,zeros(size(obj.x)),options.dims);
             elseif isempty(obj.V)
@@ -131,7 +131,7 @@ classdef ControlRegion < DrakeSystem
                 return;
             end
             gcf; hold on;
-            y = y + obj.x0*ones(1,size(y,2));
+            y = y + obj.x0(options.dims)*ones(1,size(y,2));
             h = fill3(y(1,:),y(2,:),repmat(0,1,size(y,2)),options.color,...
                 'LineStyle','-','LineWidth',2);
             xlabel(sprintf('x%d',options.dims(1)));

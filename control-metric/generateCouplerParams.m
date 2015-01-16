@@ -26,6 +26,7 @@ if dims == 3
     a = [zeros(2,n); ones(1,n)];
     d = [zeros(3, n)];
     %each coupler strut has a length and an angle 
+    n = 4;
     options = struct();
     options.max = [0.1;0]*ones(1,n);
     options.min = [0.1;-pi]*ones(1,n);

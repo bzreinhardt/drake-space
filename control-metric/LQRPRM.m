@@ -47,7 +47,7 @@ classdef LQRPRM < HybridDrakeSystem
             while ~(numel(obj.regions)>= obj.regions_max)
                 options.x0 = obj.generateCenter;
                 obj = obj.genControlRegion(options);
-                fprintf('Number of controllers: %d\n',numel(obj.regions));
+      %          fprintf('Number of controllers: %d\n',numel(obj.regions));
             end
          
             %prune controllers 

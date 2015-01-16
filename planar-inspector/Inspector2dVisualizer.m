@@ -8,40 +8,47 @@ classdef Inspector2dVisualizer < Visualizer
    a;
    L;
    num_couplers;
+   new;
   end
-
-  methods
-    function obj =  Inspector2dVisualizer(plant)
-      typecheck(plant,'Inspector2d');
-      obj = obj@Visualizer(plant.getOutputFrame);
-      obj.sphere_radius = plant.sphere_radius;
-      obj.sphere_center = plant.sphere_center;
-   obj.d =plant.d;
-   obj.a =plant.a;
-   obj.L = 0.1;
-   obj.num_couplers = plant.getNumInputs;
   
-   
-    end
-    
-    function draw(obj,t,x)
-      % Draw the Inspector 
+  methods
+      function obj =  Inspector2dVisualizer(plant)
+          typecheck(plant,'Inspector2d');
+          obj = obj@Visualizer(plant.getOutputFrame);
+          obj.sphere_radius = plant.sphere_radius;
+          obj.sphere_center = plant.sphere_center;
+          obj.d =plant.d;
+          obj.a =plant.a;
+          obj.L = 0.1;
+          obj.num_couplers = plant.getNumInputs;
+          obj.new = true;
+          
+          
+      end
+      
+      function draw(obj,t,x)
+          % Draw the Inspector
       persistent hFig base arms mags;
 
-      if (isempty(hFig))
+      if (obj.new)
         hFig = sfigure(25);
         set(hFig,'DoubleBuffer', 'on');
         
         base = [0.5*obj.L*[1 -1 -1 1]; 0.5*obj.L*[1 1 -1 -1]];
-        arms = zeros(2,size(obj.d,1)*4);
+        arms = zeros(2,size(obj.d,2)*4);
         for i = 1:obj.num_couplers
+            %angle between arm frame and body frame
             theta = atan2(obj.d(2,i),obj.d(1,i));
+            %corners of arm rectangle 
             arm = [norm(obj.d(1:2,i))/2*[1 1 -1 -1]; .01*[1 0 0 1]];
+            %rotation matrix
             r = [cos(theta), -sin(theta); sin(theta), cos(theta)];
+            %arm in body frame
             arm_w = r*arm+obj.d(1:2,i)/2*ones(1,4);
             arms(:,4*i-3:4*i) = arm_w;
         end
         mags = obj.d(1:2,:);
+        obj.new = false; 
       end
             
       sfigure(hFig); cla; hold on; view(0,90);

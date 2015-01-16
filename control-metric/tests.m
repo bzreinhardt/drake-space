@@ -6,6 +6,14 @@
 %TODO - stick the checkCOntrollersInRegion in the generate and connect
 %regions 1/1 3:26
 
+%test plan
+% have prms prune themselves of unconnected volumes
+%random fitness optimization working
+% generate fitness based on controllable volume
+% evolve fitness based on controllable volume for non-lqr spheres
+% evolve fitness based on controllable volume for lqr spheres
+
+
 classdef tests
 methods (Static)
     function testMonteCarlo
@@ -264,6 +272,8 @@ function testConnectControlRealDynaimcs %works 1/1
     fprintf('\n total volume = %f \n',prm.volume);
     valuecheck(size(prm.occupancy_map),[2,2]);
     disp(prm.occupancy_map);
+    figure(1337);clf;
+    prm.draw;
 end
 %TODO - test a random point generator
 function testGenRandomMap
@@ -272,6 +282,30 @@ function testGenRandomMap
     prm = LQRPRM(sys,range);
     options = struct;
     options.method = 'sphere2d';
+    figure(1337); clf;
+    prm = prm.fillRegion(options);
+    disp(prm.occupancy_map);
+    disp(prm.volume);
+    prm.draw;
+end
+
+%Test random generation with real dynamics
+function testGenRandomMapRealDynamics
+    sys = Inspector2d;
+    %note: range has to include only stable points (ie. here the velocities
+    %have to be zero) 
+    x_range = [-0.05 0.05];
+    y_range = [0.10 0.12];
+    theta_range = [0 0];
+    dx_range = [0 0];
+    dy_range = [0 0];
+    dtheta_range = [0 0];
+    
+    range = [x_range; y_range; theta_range; dx_range; dy_range; dtheta_range];
+    
+    prm = LQRPRM(sys,range);
+    options = struct;
+    options.method = 'tilqr';
     figure(1337); clf;
     prm = prm.fillRegion(options);
     disp(prm.occupancy_map);
@@ -292,13 +326,75 @@ end
 function testRandomGen
     %TODO, need to debug why random generation isn't working 1/3
     for i = 1:5
+        clear v; clear insp;
         [a,d]= generateCouplerParams();
+        disp('a and d');
+        disp(a);
+        disp(d);
         insp = Inspector2d(a,d);
         v = Inspector2dVisualizer(insp);
         figure(25);clf;
         v.draw(0,[0;0.11;zeros(4,1)]);
          drawnow;
+         pause(3);
     end
+end
+
+%check that random generation will converge on the correct solution given
+%an arbitrary fitness function
+function testRandomFitness
+    
+    function insp = createFun()
+        [a,d] = generateCouplerParams();
+        insp = Inspector2d(a,d);
+    end
+    create_fun = @()createFun();
+    fit_fun = @(design)fakeFitness(design);
+    [best_design, max_fitness] = runEvolution(fit_fun,create_fun);
+    v = Inspector2dVisualizer(best_design);
+    best_fitness = 1;
+    disp('percent of max');
+    disp(max_fitness/best_fitness*100);
+    figure(25);clf;
+    v.draw(0,[0;0.11;zeros(4,1)]);
+         drawnow;
+    
+end
+%randomly generate inspector parameters, generate a small prm for them, and
+%and use volume as performance metric
+function testRandomGenRandomFitnessRealDynamics
+    function insp = createFun()
+        [a,d] = generateCouplerParams();
+        insp = Inspector2d(a,d);
+    end
+    function [fitness] = fitFun(insp)
+        x_range = [-0.05 0.05];
+        y_range = [0.10 0.12];
+        theta_range = [0 0];
+        dx_range = [0 0];
+        dy_range = [0 0];
+        dtheta_range = [0 0];
+        range = [x_range; y_range; theta_range; dx_range; dy_range; dtheta_range];
+        prm = LQRPRM(insp,range);
+        prm.regions_max = 20;
+        options = struct;
+        options.method = 'tilqr';
+        prm = prm.fillRegion(options);
+        fitness = prm.volume;
+    end
+    create_fun = @()createFun();
+    fit_fun = @(design)fitFun(design);
+    [best_design, max_fitness] = runEvolution(fit_fun,create_fun);
+    v = Inspector2dVisualizer(best_design);
+    v.draw(0,[0;0.11;zeros(4,1)]);
+         drawnow;
+   disp('controllable volume');
+   disp(max_fitness);
+   
+   baseline = Inspector2d; baseline = baseline.setBaseline('four_coupler');
+   baseline_fitness = fitFun(baseline);
+   disp('baseline volume');
+   disp(baseline_fitness);
 end
 
 end
