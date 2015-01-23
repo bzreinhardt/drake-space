@@ -9,12 +9,21 @@ classdef Inspector2dVisualizer < Visualizer
    L;
    num_couplers;
    new;
+
+   fig_num;
   end
   
   methods
-      function obj =  Inspector2dVisualizer(plant)
+      function obj =  Inspector2dVisualizer(plant,fig_num)
           typecheck(plant,'Inspector2d');
+        
           obj = obj@Visualizer(plant.getOutputFrame);
+            if nargin < 2
+              obj.fig_num = 25;
+          else
+              obj.fig_num = fig_num;
+          end
+
           obj.sphere_radius = plant.sphere_radius;
           obj.sphere_center = plant.sphere_center;
           obj.d =plant.d;
@@ -31,7 +40,9 @@ classdef Inspector2dVisualizer < Visualizer
       persistent hFig base arms mags;
 
       if (obj.new)
-        hFig = sfigure(25);
+
+        hFig = sfigure(obj.fig_num);
+
         set(hFig,'DoubleBuffer', 'on');
         
         base = [0.5*obj.L*[1 -1 -1 1]; 0.5*obj.L*[1 1 -1 -1]];

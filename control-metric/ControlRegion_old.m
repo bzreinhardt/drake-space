@@ -100,13 +100,9 @@ classdef ControlRegion < DrakeSystem
         end
         
         %return a function handle that calculates the control ellipse
-        function func = getFn(obj, str_output)
-            %@str_output boolean - nonexistant or false: anon fun output
-            if nargin < 2
-                str_output = false;
-            end
-                
+        function func = getFn(obj)
             if isa(obj.V,'LyapunovFunction')
+<<<<<<< HEAD
                 % 1/16 test using dmsubs instead of fn
                % func = fn(obj.V.getPoly(0),obj.V.getFrame.getPoly);
                
@@ -114,14 +110,17 @@ classdef ControlRegion < DrakeSystem
                 %func = @(state)(full(dmsubs(obj.V.getPoly(0),obj.V.getFrame.getPoly,state)));
                 [x,p,M,sz]=decomp(obj.V.getPoly(0));
               
-                func = decomp2fun(M,p,1,str_output);
+                func = decomp2fun(M,p,1);
             elseif isa(obj.V,'msspoly')
-               %func = fn(obj.V,obj.x);
-               %func = @(state)(full(dmsubs(obj.V,obj.x,state)));
-                %[x,p,M,sz]=decomp(obj.V.getPoly(0));
-                [x,p,M,sz]=decomp(obj.V.getPoly(0));
-              
-                func = decomp2fun(M,p,1,str_output);
+               %func = fn(obj.V,obj.x); %less bad
+               %func = @(state)(full(dmsubs(obj.V,obj.x,state))); %bad
+               [x,p,M,sz]=decomp(obj.V);
+                func = decomp2fun(M,p,1);
+=======
+                func = fn(obj.V.getPoly(0),obj.V.getFrame.getPoly);
+            elseif isa(obj.V,'msspoly')
+                func = fn(obj.V,obj.x);
+>>>>>>> 5f12e3960ed647f1e5ace7049fc85481b8c48de0
             else
                 error('ControlRegion:c has no controller. Try generateController');
             end
@@ -133,26 +132,7 @@ classdef ControlRegion < DrakeSystem
             if nargin < 2
                 options = struct();
                 options.dims = [1,2];
-                color = 'g';
-                draw_center = true;
-            else
-                if ~isfield(options,'draw_center')
-                    draw_center = true;
-                else 
-                    draw_center = options.draw_center;
-                end
-                
-                if isfield(options,'color')
-                        color = options.color;      
-                else
-                    color = 'g';
-                end
-                if isfield(options,'edge_color')
-                    edge_color = color;
-                else
-                    edge_color = 'k';
-                end
-                
+                options.color = 'g';
             end
             if isa(obj.V,'LyapunovFunction')
                 y = getProjection(obj.V, 0,zeros(size(obj.x0)),options.dims);
@@ -160,8 +140,7 @@ classdef ControlRegion < DrakeSystem
                 y = getProjection(obj.x,obj.V,zeros(size(obj.x)),options.dims);
             elseif isempty(obj.V)
                 gcf; hold on;
-                plot(obj.x0(options.dims(1)),obj.x0(options.dims(2)),'x',...
-                    'Color',color);
+                plot(obj.x0(options.dims(1)),obj.x0(options.dims(2)),'gx');
                 xlabel(sprintf('x%d',options.dims(1)));
                 ylabel(sprintf('x%d',options.dims(2)));
                 hold off;
@@ -169,14 +148,10 @@ classdef ControlRegion < DrakeSystem
             end
             gcf; hold on;
             y = y + obj.x0(options.dims)*ones(1,size(y,2));
-            h = fill3(y(1,:),y(2,:),repmat(0,1,size(y,2)),color,...
-                'LineStyle','-','LineWidth',2,'EdgeColor',edge_color);
-           
+            h = fill3(y(1,:),y(2,:),repmat(0,1,size(y,2)),options.color,...
+                'LineStyle','-','LineWidth',2);
             xlabel(sprintf('x%d',options.dims(1)));
             ylabel(sprintf('x%d',options.dims(2)));
-            if draw_center
-                plot(obj.x0(options.dims(1)),obj.x0(options.dims(2)),'x','Color',color,'MarkerSize',10);
-            end
             hold off;
         end
         

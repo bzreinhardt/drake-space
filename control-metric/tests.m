@@ -80,6 +80,26 @@ methods (Static)
         
     end
 
+    
+    function testGetBoundingBox
+        sys = Inspector2d();
+        x0 = [-0.5 0.5;0 0];
+        prm = LQRPRM(sys);
+        options = struct();
+        options.plot = 'static';
+        figure(1337);clf;
+        options.method = 'sphere2d';
+        for i=1:size(x0,2)
+            options.x0 = x0(:,i);
+            prm = prm.genControlRegion(options);
+        end
+        bb = prm.getBoundingBox;
+        disp('Bounding Box: ');
+        disp(bb);
+        valuecheck(bb, [-1.5 1.5; -1 1; zeros(4,2)], 1E-3);
+    end
+
+
     function testSphereOverlap
         %2d first
         
@@ -257,23 +277,63 @@ function testConnectControlRegion6d2
 end
 
 %TODO
-function testConnectControlRealDynaimcs %works 1/1
+
+function testConnectControlRealDynamics %works 1/1
     sys = Inspector2d;
+    x_range = [-0.05 0.05];
+    y_range = [0.10 0.12];
+    theta_range = [0 0];
+    dx_range = [0 0];
+    dy_range = [0 0];
+    dtheta_range = [0 0];
+    range = [x_range; y_range; theta_range; dx_range; dy_range; dtheta_range];
     x0 = [[-0.01;0.11; zeros(4,1)],[0.01;0.11; zeros(4,1)]];
-    prm = LQRPRM(sys);
+    prm = LQRPRM(sys,range);
     options = struct();
-    options.plot = 'static';
+    %options.plot = 'static';
     options.method = 'tilqr';
+    options.normalize = true;
+    
+
     figure(1337);clf;
     for i=1:size(x0,2)
         options.x0 = x0(:,i);
         prm = prm.genControlRegion(options);
+        prm = prm.findVolume(options);
+
     end
     fprintf('\n total volume = %f \n',prm.volume);
     valuecheck(size(prm.occupancy_map),[2,2]);
     disp(prm.occupancy_map);
     figure(1337);clf;
     prm.draw;
+end
+
+function testPlotGraph
+    
+    sys = Inspector2d;
+    x_range = [-0.05 0.05];
+    y_range = [0.10 0.12];
+    theta_range = [0 0];
+    dx_range = [0 0];
+    dy_range = [0 0];
+    dtheta_range = [0 0];
+    range = [x_range; y_range; theta_range; dx_range; dy_range; dtheta_range];
+    x0 = [[-0.01;0.11; zeros(4,1)],[0.01;0.11; zeros(4,1)]];
+    prm = LQRPRM(sys,range);
+    options = struct();
+    options.method = 'tilqr';
+    options.normalize = true;
+    
+
+    figure(1337);clf;
+    for i=1:size(x0,2)
+        options.x0 = x0(:,i);
+        prm = prm.genControlRegion(options);
+        prm = prm.findVolume(options);
+    end
+    prm.plotGraph;
+    
 end
 %TODO - test a random point generator
 function testGenRandomMap
@@ -286,7 +346,19 @@ function testGenRandomMap
     prm = prm.fillRegion(options);
     disp(prm.occupancy_map);
     disp(prm.volume);
-    prm.draw;
+
+    prm.draw(1337);
+    
+    prm2 = LQRPRM(sys,range);
+    options = struct;
+    options.method = 'sphere2d';
+    options.normalize = 'true';
+    figure(1338); clf;
+    prm2 = prm2.fillRegion(options);
+    disp(prm2.occupancy_map);
+    disp(prm2.volume);
+    prm2.draw(1338);
+
 end
 
 %Test random generation with real dynamics
@@ -309,9 +381,14 @@ function testGenRandomMapRealDynamics
     figure(1337); clf;
     prm = prm.fillRegion(options);
     disp(prm.occupancy_map);
-    disp(prm.volume);
+
+    disp('Volume * 1E10');
+    disp(prm.volume*1E10);
+
     prm.draw;
 end
+
+
 
 %TODO - test that the area will converge and be pruned
 function testMapConvergence
@@ -360,41 +437,89 @@ function testRandomFitness
          drawnow;
     
 end
+
+
+
+
 %randomly generate inspector parameters, generate a small prm for them, and
 %and use volume as performance metric
 function testRandomGenRandomFitnessRealDynamics
+    x_range = [-0.05 0.05];
+    y_range = [0.10 0.12];
+    theta_range = [0 0];
+    dx_range = [0 0];
+    dy_range = [0 0];
+    dtheta_range = [0 0];
+    range = [x_range; y_range; theta_range; dx_range; dy_range; dtheta_range];
+
     function insp = createFun()
         [a,d] = generateCouplerParams();
         insp = Inspector2d(a,d);
     end
+
+    
     function [fitness] = fitFun(insp)
-        x_range = [-0.05 0.05];
-        y_range = [0.10 0.12];
-        theta_range = [0 0];
-        dx_range = [0 0];
-        dy_range = [0 0];
-        dtheta_range = [0 0];
-        range = [x_range; y_range; theta_range; dx_range; dy_range; dtheta_range];
+        
         prm = LQRPRM(insp,range);
         prm.regions_max = 20;
         options = struct;
         options.method = 'tilqr';
+        %options.normalize = 'true';
         prm = prm.fillRegion(options);
         fitness = prm.volume;
     end
+    
     create_fun = @()createFun();
     fit_fun = @(design)fitFun(design);
     [best_design, max_fitness] = runEvolution(fit_fun,create_fun);
-    v = Inspector2dVisualizer(best_design);
+    opt_prm = LQRPRM(best_design,range);
+    opt_prm.regions_max = 20;
+    options = struct;
+    options.method = 'tilqr';
+    opt_prm = opt_prm.fillRegion(options);
+    max_fitness2 = opt_prm.volume;
+    
+    
+    
+    
+    % Find baseline things
+    baseline = Inspector2d; baseline = baseline.setBaseline('four_coupler');
+    baseline_prm = LQRPRM(baseline,range);
+    baseline_prm.regions_max = 20;
+    options = struct;
+    options.method = 'tilqr';
+    baseline_prm = baseline_prm.fillRegion(options);
+    baseline_fitness = baseline_prm.volume;
+    
+    
+    %display values
+    disp('controllable volume');
+    disp(max_fitness);
+    disp('recaluclated controllable volume');
+    disp(max_fitness2);
+    disp('baseline volume');
+    disp(baseline_fitness);
+    %visualize things
+    figure(25);clf;
+    v = Inspector2dVisualizer(best_design,25);
     v.draw(0,[0;0.11;zeros(4,1)]);
-         drawnow;
-   disp('controllable volume');
-   disp(max_fitness);
+    title('');
+    
+    figure(26);clf;
+    v2 = Inspector2dVisualizer(baseline,26);
+    v2.draw(0,[0;0.11;zeros(4,1)]);
+    title('');
+    
+    figure(27);clf;
+    opt_prm.draw(27);
+    hold on;
+    title(sprintf('V_a = %d',max_fitness));
+    
+    figure(28);clf;
+    baseline_prm.draw(28);
+    title(sprintf('V_b = %d',baseline_fitness));
    
-   baseline = Inspector2d; baseline = baseline.setBaseline('four_coupler');
-   baseline_fitness = fitFun(baseline);
-   disp('baseline volume');
-   disp(baseline_fitness);
+
 end
 
 end

@@ -185,20 +185,38 @@ classdef Inspector2d < DrakeSystem
          end
          %% Set a baseline configuration 
          function obj = setBaseline(obj,type)
-             obj.d = [zeros(3,4)];
+
+             d = [zeros(3,4)];
+
              switch type
                  case 'four_coupler'
                      theta = [-pi/4, -pi/8, pi/8, pi/4];
                      for i = 1:numel(theta)
-                         obj.d(1:2,i) = [cos(theta(i)) -sin(theta(i)); ...
+
+                         d(1:2,i) = [cos(theta(i)) -sin(theta(i)); ...
                              sin(theta(i)) cos(theta(i))]*...
                              [0;-0.1];
                      end
-                     obj.a = [zeros(2,4); ones(1,4)];
+                     a = [zeros(2,4); ones(1,4)];
+                     obj = obj.setCouplers(d,a);
              end
          end
-        
-        
+         
+         %% Get the number of couplers
+         %% Set the coupler properties
+         function obj = setCouplers(obj,d,a)
+             if nargin < 3
+                 a = [zeros(2,size(d,2));ones(1,size(d,2))];
+             end
+             obj.d = d;
+             obj.a = a;
+             num_couplers = size(d,2);
+             obj = obj.setNumInputs(num_couplers);
+
+
+end
+
+
     end
     methods (Static = true)
        
