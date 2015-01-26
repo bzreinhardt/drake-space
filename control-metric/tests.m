@@ -719,12 +719,13 @@ function findDesign(num_couplers)
 end
 
 function overnightTests
+    testob = tests;
     min_actuators = 3;
     max_actuators = 8;
-    tests = 10;
+    num_tests = 10;
     for i = min_actuators:max_actuators
-        for j = 1:tests
-            
+        for j = 1:num_tests
+            testob.findDesign(i);
         end
         
     end

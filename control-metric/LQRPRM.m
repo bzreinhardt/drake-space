@@ -301,6 +301,8 @@ classdef LQRPRM < HybridDrakeSystem,
             end
         end
         
+        
+        
         function save(obj,filename,notes)
             %write the PRM to a file
             date_string = datestr(now);
@@ -308,6 +310,9 @@ classdef LQRPRM < HybridDrakeSystem,
              date_string((ismember(date_string,' ') == 1)) = '-';
              date_string((ismember(date_string,':') == 1)) = '_';
              filename = strcat('lqrprm_data_',date_string,'.json');
+         end
+         if nargin < 3
+             notes = '';
          end
          %generate a header
          data = obj.write;
