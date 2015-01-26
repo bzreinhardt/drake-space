@@ -1,4 +1,4 @@
-classdef LQRPRM < HybridDrakeSystem
+classdef LQRPRM < HybridDrakeSystem, 
     %LQRPRM holds the controllers the define a global control policy
     properties
         occupancy_map;
@@ -8,6 +8,7 @@ classdef LQRPRM < HybridDrakeSystem
         tot_range; %range of each dimension in state space for generating controllers
         sys;
         regions_max; %maximum number of regions in the system
+        volume_update = true;
         
     end
     %Todo - build in state constraint checking
@@ -34,7 +35,7 @@ classdef LQRPRM < HybridDrakeSystem
             obj.regions = {};
             obj.occupancy_map = sparse(0);
             obj.volume = 0;
-            obj.regions_max = 10;
+            obj.regions_max = 15;
             
         end
         
@@ -67,10 +68,18 @@ classdef LQRPRM < HybridDrakeSystem
             %prune controllers
         end
         %% 
+        
+        function vol = getVolume(obj)
+        
+            vol = obj.volume;
+                
+            
+        end
         function obj = findVolume(obj, options)
             if nargin < 2
                 options = struct();
             end
+            if isfield(options,'slow_occ_test')
             %occupancy test to check against each ellipse
                 occ_test = cell(numel(obj.regions),1);
                 for i = 1:numel(obj.regions)
@@ -78,10 +87,33 @@ classdef LQRPRM < HybridDrakeSystem
                     occ_test{i} = @(state)(func(state-obj.regions{i}.x0) <= 1); %see whether state is within level set
                 end
                 checkOcc = @(state)(cellfun(@(func)(func(state)),occ_test));
-                
+            else
+                checkOcc = obj.buildFastOccTest();
+            end
                 [Q,overlaps] = obj.monteCarlo(checkOcc,obj.getBoundingBox,options);
                 obj.volume = Q;
                 obj.occupancy_map = overlaps;
+                obj.volume_update = false;
+                
+            
+        end
+        
+        function func = buildFastOccTest(obj,options)
+            if nargin < 2 
+                options = struct();
+            end
+            occ_test = '@(x)([';
+            for i = 1:numel(obj.regions)
+                fn = obj.regions{i}.getFn(true,true);
+                occ_test = strcat(occ_test,fn,';');
+
+            end
+            occ_test = strcat(occ_test,'] <= [');
+            for i = 1:numel(obj.regions)
+                occ_test = strcat(occ_test,'1;');
+            end
+            occ_test = strcat(occ_test,'])');
+            func = str2func(occ_test);
         end
         
         function obj = fastFindVolume(obj,options)
@@ -269,6 +301,35 @@ classdef LQRPRM < HybridDrakeSystem
             end
         end
         
+        function save(obj,filename,notes)
+            %write the PRM to a file
+            date_string = datestr(now);
+         if nargin < 2 %autogena filename
+             date_string((ismember(date_string,' ') == 1)) = '-';
+             date_string((ismember(date_string,':') == 1)) = '_';
+             filename = strcat('lqrprm_data_',date_string,'.json');
+         end
+         %generate a header
+         data = obj.write;
+         data.notes = notes;
+         savejson('',data,'FileName',filename);
+        end
+     
+        function data = write(obj)
+            %output a struct representing the object
+            
+            data.controller_data = cell(numel(obj.regions),1);
+            for i = 1:numel(obj.regions)
+                data.controller_data{i} = obj.regions{i}.write();
+            end
+           
+            
+            data.sys_data = obj.sys.write();
+            
+            data.volume = obj.volume;
+            data.map = obj.occupancy_map;
+           
+        end
         
         
     end
@@ -282,30 +343,25 @@ classdef LQRPRM < HybridDrakeSystem
             %@param range - range of values in each dimension to sample
             %from
             %Q ~ V/N*sum(H)
-            H = 0;
-            converged = false;
-            %%%% Default parameters %%%%%
-            dynamic_plot = false;
-            static_plot = false;
-            check_overlaps = false;
-            %start with 1000 points
-            npts = 10000;
-            pts = (range(:,2)-range(:,1))*ones(1,npts).*rand(size(range,1),npts)...
-                +range(:,1)*ones(1,npts);
             
-            %set up overlap matrix
-            if nargout > 1
-                %test chck checkOcc
-                testout = checkOcc(range(:,1));
-                overlaps = zeros(numel(testout));
-                check_overlaps = true;
-            end
+            %%%%%%% Defualt options
+            focus = 0;
+            dynamic_plot = false;
+                static_plot = false;
+                rand_method = 'halton';
+                            npts = 5000;
+                            normalize = false;
+            
+            % parse inputs
             
             if nargin < 3
                 options = struct();
                 
             end
-            %set up plot options
+            if isfield(options,'focus')
+                focus = options.focus;
+      
+            end
             if isfield(options, 'plot')
                 if strcmp(options.plot,'dynamic')
                     dynamic_plot = true;
@@ -314,14 +370,34 @@ classdef LQRPRM < HybridDrakeSystem
                 end
                 
             end
-            if isfield(options,'focus')
-                focus = options.focus;
-            else
-                focus = 0;
+            if isfield(options,'rand_method')
+                rand_method = options.rand_method;
+                
+            end
+            if isfield(options,'npts')
+                npts = options.npts;
             end
             
+             if isfield(options, 'normalize')
+               normalize = true;
+            end
             
+            if nargout > 1
+                %test chck checkOcc
+                testout = checkOcc(range(:,1));
+                overlaps = zeros(numel(testout));
+                check_overlaps = true;
+            else
+                check_overlaps = false;
+     
+            end
             
+           
+            
+            pts = genRandPts(npts,size(range,1),range,rand_method);
+
+            H = 0;
+
             for i = 1:npts
                 occ = checkOcc(pts(:,i));
                 occupied = any(occ);
@@ -348,8 +424,6 @@ classdef LQRPRM < HybridDrakeSystem
                     end
                 end
                 
-                
-                
                 %plot for debugging
                 if (dynamic_plot || static_plot)
                     h = gcf; hold on;
@@ -371,18 +445,16 @@ classdef LQRPRM < HybridDrakeSystem
             end
             
             v = 1;
-            
-            for j = 1:size(range,1)
-                v = v*(range(j,2)-range(j,1));
-            end
-            %check for normalization
-            if isfield(options, 'normalize')
-                if options.normalize
-                    v = 1;
+            if ~normalize
+                for j = 1:size(range,1)
+                    if (range(j,2)-range(j,1)) > 0
+                    v = v*(range(j,2)-range(j,1));
+                    end
                 end
             end
+            
             %total volume
-            Q = v/npts*H;
+           Q = v/npts*H;
             %convergence conditions - need to actually math this:
             % net change after adding 10 points is less than 1%
             

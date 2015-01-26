@@ -16,7 +16,7 @@ for i = 1:size(M,2)
     if i ~= 1 && i ~= size(M,2)
         fn = strcat(fn,'+',term);
     elseif i == size(M,2)
-        fn = strcat(fn,'+',term,';');
+        fn = strcat(fn,'+',term);
     elseif i == 1
         fn = strcat(fn,term);
     end

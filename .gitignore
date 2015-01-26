@@ -9,3 +9,5 @@ urdf_tutorial
 **/*.mat
 .mp4
 .mat
+data
+test.txt

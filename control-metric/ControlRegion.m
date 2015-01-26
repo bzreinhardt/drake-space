@@ -41,6 +41,11 @@ classdef ControlRegion < DrakeSystem
             end;
  
         end
+        
+        function data = write(obj)
+            %output a struct representation of the object
+            data.x0 = obj.x0;
+        end
         %
         function addPoints(obj,occ)
             %@param occ - sparse occupancy matrix of stabalizable points in
@@ -100,30 +105,55 @@ classdef ControlRegion < DrakeSystem
         end
         
         %return a function handle that calculates the control ellipse
-        function func = getFn(obj, str_output)
+        function func = getFn(obj, str_output,add_center)
             %@str_output boolean - nonexistant or false: anon fun output
             if nargin < 2
                 str_output = false;
+            end
+            if nargin < 3
+                add_center = false;
             end
                 
             if isa(obj.V,'LyapunovFunction')
                 % 1/16 test using dmsubs instead of fn
                % func = fn(obj.V.getPoly(0),obj.V.getFrame.getPoly);
                
-                %dmsubs is still way slower
-                %func = @(state)(full(dmsubs(obj.V.getPoly(0),obj.V.getFrame.getPoly,state)));
-                [x,p,M,sz]=decomp(obj.V.getPoly(0));
-              
-                func = decomp2fun(M,p,1,str_output);
+               %dmsubs is still way slower
+               %func = @(state)(full(dmsubs(obj.V.getPoly(0),obj.V.getFrame.getPoly,state)));
+               [x,p,M,sz]=decomp(obj.V.getPoly(0));
+               
+               func = decomp2fun(M,p,1,str_output);
             elseif isa(obj.V,'msspoly')
-               %func = fn(obj.V,obj.x);
-               %func = @(state)(full(dmsubs(obj.V,obj.x,state)));
+                %func = fn(obj.V,obj.x);
+                %func = @(state)(full(dmsubs(obj.V,obj.x,state)));
                 %[x,p,M,sz]=decomp(obj.V.getPoly(0));
-                [x,p,M,sz]=decomp(obj.V.getPoly(0));
-              
+                [x,p,M,sz]=decomp(obj.V);
+                
                 func = decomp2fun(M,p,1,str_output);
             else
                 error('ControlRegion:c has no controller. Try generateController');
+            end
+            
+            if add_center
+                newfunc = '';
+                k = 1;
+                for j = 1:length(func)
+                    if strcmp(func(j),'x')
+                        i = str2double(func(j+2));
+                        left = func(k:j-1);
+                        mid = func(j:j+3);
+                        
+                        
+                        newfunc = strcat(newfunc,left,'(',mid,...
+                            sprintf('-%f)',obj.x0(i)));
+                        k = j+4;
+                    end
+                    
+                end
+                if k <= length(func)
+                   newfunc = strcat(newfunc,func(k:end));
+                end
+                func = newfunc;
             end
         end
         

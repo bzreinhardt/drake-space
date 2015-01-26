@@ -1,4 +1,4 @@
-classdef Inspector2d < DrakeSystem
+classdef Inspector2d < DrakeSystem 
     %Planar dynamics of an induction nspector
     
     properties
@@ -214,7 +214,13 @@ classdef Inspector2d < DrakeSystem
              obj = obj.setNumInputs(num_couplers);
 
 
-end
+         end
+
+         function data = write(obj)
+             %output a struct representing the object
+             data.a = obj.a;
+             data.d = obj.d;
+         end
 
 
     end
