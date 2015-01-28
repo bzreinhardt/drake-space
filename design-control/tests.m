@@ -600,7 +600,7 @@ function testRandomGenRandomFitnessRealDynamics
     range = [x_range; y_range; theta_range; dx_range; dy_range; dtheta_range];
 
     function insp = createFun()
-        [a,d] = generateCouplerParams(num_couplers);
+        [a,d] = generateCouplerParams();
         insp = Inspector2d(a,d);
     end
 
@@ -626,7 +626,7 @@ function testRandomGenRandomFitnessRealDynamics
     opt_prm.regions_max = 20;
     options = struct;
     options.method = 'tilqr';
-    options.rand_method = 'rand';
+    
     opt_prm = opt_prm.fillRegion(options);
     max_fitness2 = opt_prm.volume;
     
