@@ -9,18 +9,18 @@ classdef MultiRotor < SecondOrderSystem
   %  u(2) - prop 2 thrust
 
   properties  %  based on (Bouadi, Bouchoucha, Tadjine 2007)
-    l = [-0.25; 0.25]; % lengths of rotor arms
+    l = [-0.25; -0.1; 0.1; 0.25]; % lengths of rotor arms
     m = 0.486; % mass of quadrotor
     I = 0.00383; % moment of inertia
     g = 9.81; % gravity
-    angles = [pi/2; pi/2];
+    angles = pi/6*[5;4;2;1];
     
   end
   
   methods
     function obj = MultiRotor(angles, l)
         if nargin < 1
-            num_rotors = 2;
+            num_rotors = 4;
         else
             num_rotors = numel(angles);
         end
@@ -38,7 +38,7 @@ classdef MultiRotor < SecondOrderSystem
       obj.m = 0.4248+0.0306*numel(obj.angles);
       obj.I = sum(0.0306*obj.l.^2);
       %u_max = 10;
-      obj = setInputLimits(obj,0,10);
+      obj = setInputLimits(obj,0,3);
       
 
       
@@ -59,6 +59,10 @@ classdef MultiRotor < SecondOrderSystem
       1/obj.m*(sin(q(3))*u_x + cos(q(3))*u_y) - obj.g;
         1/obj.I*(u_tau)];
     end
+    
+    function control_region = genControlRegion (obj,x0)
+            control_region = MultirotorControlRegion(x0,obj);
+        end
     
     function x = getInitialState(obj)
       x = randn(6,1);

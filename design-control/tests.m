@@ -130,7 +130,7 @@ methods (Static)
     function testControlRegionBB
         sys = Inspector2d;
         x0 = [0;0];
-        c = ControlRegion(x0,sys);
+        c = sys.ControlRegion(x0);
         state = sys.getStateFrame.getPoly; 
         c.x = state(1:2);
         c.V = state(1)^2+state(2)^2;

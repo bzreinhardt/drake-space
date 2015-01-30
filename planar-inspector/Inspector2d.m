@@ -76,6 +76,10 @@ classdef Inspector2d < DrakeSystem
         function y = output(obj,t,x,u)
             y = x;
         end
+        %generate an instance of the Inspector's Control Region class
+        function control_region = genControlRegion (obj,x0)
+            control_region = InspectorControlRegion(x0,obj);
+        end
         
         function [c,V0] = findLQR(obj,x0,u0)
             %Generates an lqr controller for the inspector around a given

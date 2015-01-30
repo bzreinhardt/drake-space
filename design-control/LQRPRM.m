@@ -145,7 +145,7 @@ classdef LQRPRM < HybridDrakeSystem,
             if ~isfield(options,'connect_at_end')
                 options.connect_at_end = 'true';
             end
-            c = ControlRegion(x0,obj.sys);
+            c = obj.sys.genControlRegion(x0); %use systems own genControlRegion to make it generically applicable
             c = c.generateController(options);
             obj.regions{1+numel(obj.regions)} = c;
             %debugging drawing
