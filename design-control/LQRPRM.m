@@ -1,4 +1,4 @@
-classdef LQRPRM < HybridDrakeSystem, 
+classdef LQRPRM < HybridDrakeSystem,
     %LQRPRM holds the controllers the define a global control policy
     properties
         occupancy_map;
@@ -62,17 +62,17 @@ classdef LQRPRM < HybridDrakeSystem,
             % find the volume and connect all the controllers
             if options.connect_at_end
                 
-               obj = obj.findVolume(options);
+                obj = obj.findVolume(options);
             end
             
             %prune controllers
         end
-        %% 
+        %%
         
         function vol = getVolume(obj)
-        
+            
             vol = obj.volume;
-                
+            
             
         end
         function obj = findVolume(obj, options)
@@ -80,7 +80,7 @@ classdef LQRPRM < HybridDrakeSystem,
                 options = struct();
             end
             if isfield(options,'slow_occ_test')
-            %occupancy test to check against each ellipse
+                %occupancy test to check against each ellipse
                 occ_test = cell(numel(obj.regions),1);
                 for i = 1:numel(obj.regions)
                     func = obj.regions{i}.getFn; %get the lyapunov polynomial
@@ -90,23 +90,23 @@ classdef LQRPRM < HybridDrakeSystem,
             else
                 checkOcc = obj.buildFastOccTest();
             end
-                [Q,overlaps] = obj.monteCarlo(checkOcc,obj.getBoundingBox,options);
-                obj.volume = Q;
-                obj.occupancy_map = overlaps;
-                obj.volume_update = false;
-                
+            [Q,overlaps] = obj.monteCarlo(checkOcc,obj.getBoundingBox,options);
+            obj.volume = Q;
+            obj.occupancy_map = overlaps;
+            obj.volume_update = false;
+            
             
         end
         
         function func = buildFastOccTest(obj,options)
-            if nargin < 2 
+            if nargin < 2
                 options = struct();
             end
             occ_test = '@(x)([';
             for i = 1:numel(obj.regions)
                 fn = obj.regions{i}.getFn(true,true);
                 occ_test = strcat(occ_test,fn,';');
-
+                
             end
             occ_test = strcat(occ_test,'] <= [');
             for i = 1:numel(obj.regions)
@@ -117,16 +117,14 @@ classdef LQRPRM < HybridDrakeSystem,
         end
         
         function obj = fastFindVolume(obj,options)
-            error('FASTFINDVOLUME:ERROR NOT IMPLEMENTED YET');
-%             if nargin < 2
-%                 options = struct();
-%             end
-%             fns = cell(numel(obj.regions),1);
-%             for i = 1:numel(obj.regions)
-%                 str_fn = obj.regions{i}.getFn(true);
-%                 fns{i} = strcat('(',str_fn,')'
-%                 % need to pull the regions center into the function
-%             end
+            
+            if nargin < 2
+                options = struct();
+            end
+            checkOcc = obj.buildFastOccTest();
+            
+            [Q,overlaps] = obj.monteCarlo(checkOcc,obj.getBoundingBox,options);
+            obj.volume = Q;
         end
         
         function obj = genControlRegion(obj,options)
@@ -240,7 +238,7 @@ classdef LQRPRM < HybridDrakeSystem,
             if nargin < 3
                 options.dims = [1,2];
                 options.color = 'g';
-
+                
             end
             rand_color = false;
             if isfield(options,'color')
@@ -248,24 +246,24 @@ classdef LQRPRM < HybridDrakeSystem,
                     rand_color = true;
                 end
             end
-              
-                
-       
+            
+            
+            
             
             figure(fig); hold on;
             
             for i = 1:numel(obj.regions)
                 
                 if rand_color
-                        cc=hsv(12);
-                        options.color = cc(mod(i,12),:);
+                    cc=hsv(12);
+                    options.color = cc(mod(i,12),:);
                 end
                 obj.regions{i}.draw(options);
                 
-                if isfield(options,'label') 
+                if isfield(options,'label')
                     text(obj.regions{i}.x0(options.dims(1)),...
                         obj.regions{i}.x0(options.dims(2)),...
-                       sprintf('%d',i),'FontSize',20); 
+                        sprintf('%d',i),'FontSize',20);
                 end
             end
             alpha(0.05);
@@ -277,7 +275,7 @@ classdef LQRPRM < HybridDrakeSystem,
         %get the bounding box for the entire controller
         
         function plotGraph(obj,fig,options)
-            if nargin < 2 
+            if nargin < 2
                 fig = gcf;
             end
             if nargin < 3
@@ -290,8 +288,8 @@ classdef LQRPRM < HybridDrakeSystem,
                 plot(obj.regions{i}.x0(options.dims(1)),obj.regions{i}.x0(options.dims(2)),...
                     'o','MarkerSize',10);
                 text(obj.regions{i}.x0(options.dims(1)),...
-                        obj.regions{i}.x0(options.dims(2)),...
-                       sprintf('%d',i),'FontSize',20); 
+                    obj.regions{i}.x0(options.dims(2)),...
+                    sprintf('%d',i),'FontSize',20);
                 for j = 1:numel(obj.regions)
                     if obj.occupancy_map(i,j)
                         plot([obj.regions{i}.x0(options.dims(1)),obj.regions{j}.x0(options.dims(1))],...
@@ -306,20 +304,20 @@ classdef LQRPRM < HybridDrakeSystem,
         function save(obj,filename,notes)
             %write the PRM to a file
             date_string = datestr(now);
-         if nargin < 2 %autogena filename
-             date_string((ismember(date_string,' ') == 1)) = '-';
-             date_string((ismember(date_string,':') == 1)) = '_';
-             filename = strcat('lqrprm_data_',date_string,'.json');
-         end
-         if nargin < 3
-             notes = '';
-         end
-         %generate a header
-         data = obj.write;
-         data.notes = notes;
-         savejson('',data,'FileName',filename);
+            if nargin < 2 %autogena filename
+                date_string((ismember(date_string,' ') == 1)) = '-';
+                date_string((ismember(date_string,':') == 1)) = '_';
+                filename = strcat('lqrprm_data_',date_string,'.json');
+            end
+            if nargin < 3
+                notes = '';
+            end
+            %generate a header
+            data = obj.write;
+            data.notes = notes;
+            savejson('',data,'FileName',filename);
         end
-     
+        
         function data = write(obj)
             %output a struct representing the object
             
@@ -327,13 +325,13 @@ classdef LQRPRM < HybridDrakeSystem,
             for i = 1:numel(obj.regions)
                 data.controller_data{i} = obj.regions{i}.write();
             end
-           
+            
             
             data.sys_data = obj.sys.write();
             
             data.volume = obj.volume;
             data.map = obj.occupancy_map;
-           
+            
         end
         
         
@@ -352,10 +350,10 @@ classdef LQRPRM < HybridDrakeSystem,
             %%%%%%% Defualt options
             focus = 0;
             dynamic_plot = false;
-                static_plot = false;
-                rand_method = 'halton';
-                            npts = 5000;
-                            normalize = false;
+            static_plot = false;
+            rand_method = 'halton';
+            npts = 5000;
+            normalize = false;
             
             % parse inputs
             
@@ -365,7 +363,7 @@ classdef LQRPRM < HybridDrakeSystem,
             end
             if isfield(options,'focus')
                 focus = options.focus;
-      
+                
             end
             if isfield(options, 'plot')
                 if strcmp(options.plot,'dynamic')
@@ -383,8 +381,8 @@ classdef LQRPRM < HybridDrakeSystem,
                 npts = options.npts;
             end
             
-             if isfield(options, 'normalize')
-               normalize = true;
+            if isfield(options, 'normalize')
+                normalize = true;
             end
             
             if nargout > 1
@@ -394,15 +392,13 @@ classdef LQRPRM < HybridDrakeSystem,
                 check_overlaps = true;
             else
                 check_overlaps = false;
-     
+                
             end
             
-           
-            
             pts = genRandPts(npts,size(range,1),range,rand_method);
-
+            
             H = 0;
-
+            
             for i = 1:npts
                 occ = checkOcc(pts(:,i));
                 occupied = any(occ);
@@ -412,10 +408,10 @@ classdef LQRPRM < HybridDrakeSystem,
                     if check_overlaps
                         ellipses = find(occ);
                         %uncount double counted volume
-                            %if we're trying to find the volume of a
-                            %single ellipse and none of the ellipses
-                            %are that one, the point doesn't count
-                            %towards volume
+                        %if we're trying to find the volume of a
+                        %single ellipse and none of the ellipses
+                        %are that one, the point doesn't count
+                        %towards volume
                         if focus > 0 && all(ellipses - focus)
                             H = H - 1;
                         end
@@ -453,13 +449,13 @@ classdef LQRPRM < HybridDrakeSystem,
             if ~normalize
                 for j = 1:size(range,1)
                     if (range(j,2)-range(j,1)) > 0
-                    v = v*(range(j,2)-range(j,1));
+                        v = v*(range(j,2)-range(j,1));
                     end
                 end
             end
             
             %total volume
-           Q = v/npts*H;
+            Q = v/npts*H;
             %convergence conditions - need to actually math this:
             % net change after adding 10 points is less than 1%
             

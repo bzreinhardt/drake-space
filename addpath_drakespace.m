@@ -4,4 +4,4 @@ root = pwd;
 addpath(fullfile(root)); % add everything for now
 addpath(fullfile(root,'utility'));
 addpath(fullfile(root,'planar-inspector'));
-addpath(fullfile(root, 'control-metric'));
+addpath(fullfile(root, 'design-control'));

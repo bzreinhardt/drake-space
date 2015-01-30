@@ -11,3 +11,4 @@ urdf_tutorial
 .mat
 data
 test.txt
+graphics/*
