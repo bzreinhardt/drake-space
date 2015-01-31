@@ -145,7 +145,12 @@ classdef LQRPRM < HybridDrakeSystem,
             if ~isfield(options,'connect_at_end')
                 options.connect_at_end = 'true';
             end
-            c = obj.sys.genControlRegion(x0); %use systems own genControlRegion to make it generically applicable
+           try
+                c = obj.sys.genControlRegion(x0); %use systems own genControlRegion to make it generically applicable
+           catch err
+%               disp(err);
+               return;
+            end
             c = c.generateController(options);
             obj.regions{1+numel(obj.regions)} = c;
             %debugging drawing
@@ -203,17 +208,24 @@ classdef LQRPRM < HybridDrakeSystem,
         end
         
         function bb = getBoundingBox(obj)
-            bb = zeros(obj.sys.getNumStates,2);
-            for i = 1:numel(obj.regions)
-                c_bb = obj.regions{i}.getBoundingBox();
-                %pad bounding box with zeros if controller is lower
-                %dimension than the system
-                if size(c_bb,1) < obj.sys.getNumStates
-                    c_bb = [c_bb; zeros(obj.sys.getNumStates - size(c_bb,1),2)];
+            if numel(obj.regions) > 0
+                bb = obj.regions{1}.getBoundingBox();
+            else
+                bb = zeros(obj.sys.getNumStates,2);
+                return;
+            end
+            if numel(obj.regions) > 1
+                for i = 2:numel(obj.regions)
+                    c_bb = obj.regions{i}.getBoundingBox();
+                    %pad bounding box with zeros if controller is lower
+                    %dimension than the system
+                    if size(c_bb,1) < obj.sys.getNumStates
+                        c_bb = [c_bb; zeros(obj.sys.getNumStates - size(c_bb,1),2)];
+                    end
+                    diff_bb = [bb(:,1) - c_bb(:,1), c_bb(:,2) - bb(:,2)];
+                    ind = find(diff_bb > 0);
+                    bb(ind) = c_bb(ind);
                 end
-                diff_bb = [bb(:,1) - c_bb(:,1), c_bb(:,2) - bb(:,2)];
-                ind = find(diff_bb > 0);
-                bb(ind) = c_bb(ind);
             end
         end
         %check the possible controllers in a region

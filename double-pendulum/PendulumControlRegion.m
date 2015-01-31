@@ -1,9 +1,9 @@
-classdef LinkControlRegion < DrakeSystem
+classdef PendulumControlRegion < DrakeSystem
     properties
         c; %controller
         V; % polynomial defining region of attraction 
         neighbors; % neighbors
-        x0; %center of the region. Assumes all control ellipses are centered at 0.
+        x0 = [0;0]; %center of the region. Assumes all control ellipses are centered at 0.
         u0; %nominal control of the region - 0 in space
         Q;
         R;
@@ -18,8 +18,9 @@ classdef LinkControlRegion < DrakeSystem
     
     methods
         %Constructor
-        function obj = LinkControlRegion(x0,sys)
+        function obj = PendulumControlRegion(x0,sys)
 %should check for x0 matching sys dimensions
+%throws an error if x0 is not a stable point
             if nargin < 1
                 num_states = numel(x0);
                 num_inputs = 0;
@@ -32,7 +33,6 @@ classdef LinkControlRegion < DrakeSystem
             obj.Q = blkdiag(10*eye(num_states/2),eye(num_states/2));
             obj.R = eye(num_inputs);
             
-            if (nargin > 0), obj.x0 = x0; end;
             if (nargin > 1)
                 obj.sys = sys; 
                 obj = obj.setStateFrame(sys.getStateFrame);
@@ -40,21 +40,15 @@ classdef LinkControlRegion < DrakeSystem
                 
             end;
             
-            tau = sys.equilibriumTorque(x0(sys.getNumStates/2));
+            %check for queilibrium torque
+            tau = sys.equilibriumTorque(x0(1:sys.getNumStates/2));
             if any(isnan(tau))
-                warning('LINKCONTROLREGION: x0 is not a fixed point');
+                error('PendulumCONTROLREGION: x0 is not a fixed point');
             else
-                
-                if ~isequal(xstar.double,x0)
-                    warning('LINKCONTROLREGION: x0 not a stable point. switch to stable point');
-                    disp('new x0 = ');
-                    disp(xstar.double);
-                    
-                end
-                obj.x0 = xstar.double;
-                obj.u0 = ustar.double;
-                disp('u0 =');
-                disp(ustar.double);
+               obj.x0 = x0; 
+                obj.u0 = tau;
+         %       disp('u0 =');
+          %      disp(tau);
             end
  
         end

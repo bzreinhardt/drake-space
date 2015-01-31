@@ -1,11 +1,11 @@
 function testConnectControlRealDynamics %works 1/1
-    sys = DoublePendPlat;
+    sys = DoublePendPlant;
     theta1_range = [-pi,pi];
     theta2_range = [-pi,pi];
     omega1_range = [0 0];
     omega2_range = [0 0];
     range = [theta1_range; theta2_range; omega1_range; omega2_range];
-    x0 = [[pi;0;0;0],[0.95*pi;0;0;0],[0.8*pi;0;0;0]];
+    x0 = [[0;0;0;0],[0.05;0;0;0],[0.8*pi;0;0;0]];
     prm = LQRPRM(sys,range);
     options = struct();
     %options.plot = 'static';
@@ -31,3 +31,4 @@ function testConnectControlRealDynamics %works 1/1
     prm.draw;
  %   prm.save;
 end
+
