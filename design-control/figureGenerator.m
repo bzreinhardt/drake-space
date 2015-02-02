@@ -10,6 +10,21 @@ classdef figureGenerator
     end
     methods
         
+        function convergenceFig(obj)
+            [volumes,iterations,baseline] = parsePendTests('/home/ben/drake-space/data/pendulum_convergence_test');
+            figure(1234); clf;
+            scatter(iterations,volumes,50,'*'); hold on;
+            plot([0,iterations],baseline.controller.volume*ones(size([0,iterations])),'LineWidth',3);
+            legend('Generated Controllers','Optimal Design');
+            xlabel('Number of Iterations');
+            ylabel('Controller Volume');
+            ylim([10, 110]);
+            
+            hgsave(strcat(obj.fig_folder,'pendulum-convergence.fig'));
+           save2pdf(strcat(obj.target_folder,'pendulum-convergence.pdf'));
+
+        end
+        
         function genFourFigs(obj)
             figure_array = [25:28];
             %generate baseline and algorithmic figures

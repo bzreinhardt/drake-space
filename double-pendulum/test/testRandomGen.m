@@ -41,6 +41,7 @@ function testRandomGen
     baseline_prm = LQRPRM(baseline_design,range);
     baseline_prm = baseline_prm.fillRegion(options);
     baseline_fitness = baseline_prm.volume;
+    
 
     %display values
     disp('controllable volume');

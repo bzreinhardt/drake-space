@@ -12,3 +12,5 @@ urdf_tutorial
 data
 test.txt
 graphics/*
+**.*/json
+**/*.json

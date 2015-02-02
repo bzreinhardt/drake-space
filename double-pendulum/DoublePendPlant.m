@@ -82,6 +82,14 @@ classdef DoublePendPlant < Manipulator
       x = .1*randn(4,1);
     end
     
+     function data = write(obj)
+             %output a struct representing the object
+             data.m1 = obj.m1;
+              data.m2 = obj.m2;
+             data.l1 = obj.l1;
+             data.l2 = obj.l2;
+         end
+    
   end
   
   methods(Static)
