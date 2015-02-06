@@ -34,10 +34,10 @@ v = r.constructVisualizer();
 
 %% Visualize
 %% Display possible forces
-X = [0;0;0.1;zeros(15,1)];
-x0 = X;
-state_dims = [1:6];
-load('~/drake-space/@RigidBodyCoupler/coupler_splines.mat');
-callback = @(x,model)forceCallback(x,model,f_x_spline,f_y_spline);
-v = v.setCallback(callback);
-v.inspector(x0,state_dims)
+% X = [0;0;0.1;zeros(15,1)];
+% x0 = X;
+% state_dims = [1:6];
+% load('~/drake-space/@RigidBodyCoupler/coupler_splines.mat');
+% callback = @(x,model)forceCallback(x,model,f_x_spline,f_y_spline);
+% v = v.setCallback(callback);
+% v.inspector(x0,state_dims)

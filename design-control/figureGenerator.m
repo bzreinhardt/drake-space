@@ -2,12 +2,16 @@ classdef figureGenerator
     properties
         target_folder = '~/Documents/papers/controller_creation/graphics/';
         fig_folder = '~/drake-space/graphics/control-metric-design/';
-        d_human=26;
-        c_human=28;
-        d_algorithm=25;
-        c_algorithm=27;
+        fig_array = [1,2,3,4];
+        name_array = {'d_human','d_algorithm','c_human',...
+                'c_algorithm'};
+            
         
     end
+    %Knepper figure fixes:
+    % Early figure for paper - make interactive opengl thing?
+    % Normalize figure 2 
+    % Zoom in on figure 3c-d
     methods
         
         function convergenceFig(obj)
@@ -17,34 +21,52 @@ classdef figureGenerator
             plot([0,iterations],baseline.controller.volume*ones(size([0,iterations])),'LineWidth',3);
             legend('Generated Controllers','Optimal Design');
             xlabel('Number of Iterations');
-            ylabel('Controller Volume');
-            ylim([10, 110]);
+            ylabel('Normalized Controller Volume');
+            ylim([0.1, 1.3]);
             
             hgsave(strcat(obj.fig_folder,'pendulum-convergence.fig'));
-           save2pdf(strcat(obj.target_folder,'pendulum-convergence.pdf'));
-
+            save2pdf(strcat(obj.target_folder,'pendulum-convergence.pdf'));
+            
         end
         
-        function genFourFigs(obj)
-            figure_array = [25:28];
+        function obj = loadFourFigs(obj)
+            
+            for i = 1:length(obj.name_array)
+                
+                obj.fig_array(i) = openfig(strcat(obj.fig_folder,obj.name_array{i},'.fig'));
+            end
+        end
+        
+        function genFourFigs(obj,open)
+
+            if nargin>1
+                obj.loadFourFigs;
+            end
+            
+            
             %generate baseline and algorithmic figures
-            xl = [-0.2 0.2];
-            yl = [0.0 0.2];
-            for i = figure_array
-                figure(i)
+            xl_d = [-0.2 0.2];
+            yl_d = [0.0 0.2];
+            xl_c = [-0.13 0.13];
+            yl_c = [0.08 0.17];
+            
+            for i = 1:length(obj.name_array)
+                figure(obj.fig_array(i))
+                if i < 3
+                    xl = xl_d;
+                    yl = yl_d;
+                else
+                    xl = xl_c;
+                    yl = yl_c;
+                end
+                    
                 xlim(xl);
                 ylim(yl);
-                set(i,'Position',[100 100 800 600]);
+                set(obj.fig_array(i),'Position',[100 100 800 600]);
+                xlabel('x1 (m)'); ylabel('x2 (m)');
+                hgsave(strcat(obj.fig_folder,obj.name_array{i},'.fig'));
+                save2pdf(strcat(obj.target_folder,obj.name_array{i},'.pdf'));
             end
-            hgsave(obj.d_human,strcat(obj.fig_folder,'d_human.fig'));
-            hgsave(obj.d_algorithm,strcat(obj.fig_folder,'d_algorithm.fig'));
-            save2pdf(strcat(obj.target_folder,'d_human.pdf'),obj.d_human);
-            save2pdf(strcat(obj.target_folder,'d_algorithm.pdf'),obj.d_algorithm);
-            
-            hgsave(obj.c_human,strcat(obj.fig_folder,'c_human.fig'));
-            hgsave(obj.c_algorithm,strcat(obj.fig_folder,'c_algorithm.fig'));
-            save2pdf(strcat(obj.target_folder,'c_human.pdf'),obj.c_human);
-            save2pdf(strcat(obj.target_folder,'c_algorithm.pdf'),obj.c_algorithm);
         end
         
          function updateSimpleRegions(obj,filename,foldername)
