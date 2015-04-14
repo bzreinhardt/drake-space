@@ -127,14 +127,14 @@ classdef BotVisualizer < RigidBodyVisualizer
         obj.draw_msg.position(i,:) = pt(1:3);
         obj.draw_msg.quaternion(i,:) = pt(4:7);
       end
-      
+      obj.draw_msg.glColor3f(1, 1, 1);
       lc = lcm.lcm.LCM.getSingleton();
       lc.publish('DRAKE_VIEWER_DRAW',obj.draw_msg);
        if ~isempty(obj.callback)
           obj.callback(q,obj.model);
       end
     end
-    
+    a
     function obj = loadRenderer(obj,renderer_dynobj_path)
       % dynamically load a libbot renderer
       vc = drake.lcmt_viewer_command();

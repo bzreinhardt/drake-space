@@ -677,7 +677,7 @@ function findDesign(num_couplers)
     if nargin < 1
         num_couplers = 4;
     end
-         x_range = [-0.05 0.05];
+    x_range = [-0.05 0.05];
     y_range = [0.10 0.15];
     theta_range = [0 0];
     dx_range = [0 0];
@@ -700,7 +700,7 @@ function findDesign(num_couplers)
         %options.normalize = 'true';
         prm = prm.fillRegion(options);
         fitness = prm.volume;
-        disp('volume = ');
+        hdisp('volume = ');
         disp(fitness);
       
     end
@@ -731,6 +731,86 @@ function overnightTests
     end
     
 end
+
+function testCmaesSave
+    angle_range = [-pi 0];
+        opts.LBounds = angle_range(1)*ones(4,1);
+        opts.UBounds = angle_range(2)*ones(4,1);
+        
+        %cmaes options
+        sigma = pi/4;
+        X0 = [-2*pi/3; -3*pi/4; -pi/4; -pi/3];
+        
+    %run cmaes for some number of iterations
+    its = 2;
+        opts.StopIter = its;
+        [XMIN, FMIN, COUNTEVAL, STOPFLAG, OUT, BESTEVER] = cmaes('inspectorFitFun',X0,sigma,opts);
+        folder = strcat('output_',num2str(its));
+        system(strcat('bash rename_cmaes.sh ',folder));
+end
+
+function overnightCmaesTest
+        angle_range = [-pi 0];
+        opts.LBounds = angle_range(1)*ones(4,1);
+        opts.UBounds = angle_range(2)*ones(4,1);
+        
+        %cmaes options
+        sigma = pi/6;
+        X0 = [-2*pi/3; -3*pi/4; -pi/4; -pi/3];
+        
+    %run cmaes for some number of iterations
+    for its = 3:20
+        opts.StopIter = its;
+        [XMIN, FMIN, COUNTEVAL, STOPFLAG, OUT, BESTEVER] = cmaes('inspectorFitFun',X0,sigma,opts,p);
+        folder = strcat('output_',num2str(its));
+        system(strcat('bash rename_cmaes.sh ',folder));
+    end
+end
+
+
+function testCmaesFrosen
+%check that cmaes works with frosen function
+   function f=frosenbrock(x)
+       %for N = 2, global minum at (x,y) = (a,a^2)
+       %f(x,y) = (a-x)^2 + b(y-x^2)^2
+        if size(x,1) < 2 error('dimension must be greater one'); end
+        f = 100*sum((x(1:end-1).^2 - x(2:end)).^2) + sum((x(1:end-1)-1).^2);
+   end
+
+x0 = [0;0];
+sigma = 1.5;
+
+xmin = cmaes('frosenbrock',x0,sigma);
+disp(xmin);
+end
+
+function testCmaesRealInspectorFakeFitness
+%test Cmaes optimizing real inspector object on fake fitness function
+
+    sigma = pi/2;
+    x0 = [0;pi/4;3*pi/4;pi];
+    min = cmaes('gaFitFun',x0,sigma);
+    max_fitness = gaFitFun(min);
+    a = [zeros(2,4);ones(1,4)];
+        d = zeros(3,4);
+    for i = 1:4
+        d(:,i) = 0.1*[cos(min(i));sin(min(i));0];
+    end
+    best_design = Inspector2d(a,d);
+    v = Inspector2dVisualizer(best_design);
+    best_fitness = 1;
+    disp('percent of max');
+    disp(max_fitness/best_fitness*100);
+    figure(25);clf;
+    v.draw(0,[0;0.11;zeros(4,1)]);
+         drawnow;
+end
+
+function testCmaesPendulumOpt
+%test control algorithm with pendulum system and control volume metric
+end
+
+
 
 end
 

@@ -1,0 +1,364 @@
+<?xml version="1.0" ?>
+ <robot name="test_inductor">
+<link name="base_link">
+<inertial>
+<mass value="1"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="1" ixy="0" ixz="0" iyx="0" iyy="1" iyz="0" izx="0" izy="0" izz="1" />
+</inertial>
+<visual>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.1 0.1 0.1" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.1 0.1 0.1" />
+</geometry>
+</collision>
+</link>
+<joint name="coupler1_joint" type="continuous">
+<origin xyz="0.040000 0.320000 0.000000"/>
+<axis xyz = "0.000000 1.000000 0.000000" />
+<parent link="base_link"/>
+<child link="coupler1_link"/>
+</joint>
+<link name="coupler1_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="1.570796 -0.000000 3.141593" xyz="0 0 0" />
+<geometry>
+<cylinder length="0.01" radius="0.02" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<force_element name="coupler1">
+<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
+<parent link="coupler1_link"/>
+<origin xyz="0 0 0"/>
+<axis xyz="0.000000 1.000000 0.000000"/>
+</induction_coupler>
+</force_element>
+<joint name="arm1_joint" type="continuous">
+<origin xyz="0 0 0" rpy="1.570796 -0.000000 3.017238" />
+<axis xyz = "0.124035 0.992278 0.000000" />
+<parent link="base_link"/>
+<child link="arm1_link"/>
+</joint>
+<link name="arm1_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="0 0 0" xyz="0.000000 0.000000 -0.161245" />
+<geometry>
+<cylinder length="0.322490" radius="0.01" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<joint name="coupler2_joint" type="continuous">
+<origin xyz="0.040000 0.320000 0.000000"/>
+<axis xyz = "0.000000 0.000000 1.000000" />
+<parent link="base_link"/>
+<child link="coupler2_link"/>
+</joint>
+<link name="coupler2_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="0.000000 0.000000 0.000000" xyz="0 0 0" />
+<geometry>
+<cylinder length="0.01" radius="0.02" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<force_element name="coupler2">
+<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
+<parent link="coupler2_link"/>
+<origin xyz="0 0 0"/>
+<axis xyz="0.000000 0.000000 1.000000"/>
+</induction_coupler>
+</force_element>
+<joint name="arm2_joint" type="continuous">
+<origin xyz="0 0 0" rpy="1.570796 -0.000000 3.017238" />
+<axis xyz = "0.124035 0.992278 0.000000" />
+<parent link="base_link"/>
+<child link="arm2_link"/>
+</joint>
+<link name="arm2_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="0 0 0" xyz="0.000000 0.000000 -0.161245" />
+<geometry>
+<cylinder length="0.322490" radius="0.01" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<joint name="coupler3_joint" type="continuous">
+<origin xyz="0.040000 -0.320000 0.000000"/>
+<axis xyz = "0.000000 1.000000 0.000000" />
+<parent link="base_link"/>
+<child link="coupler3_link"/>
+</joint>
+<link name="coupler3_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="1.570796 -0.000000 3.141593" xyz="0 0 0" />
+<geometry>
+<cylinder length="0.01" radius="0.02" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<force_element name="coupler3">
+<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
+<parent link="coupler3_link"/>
+<origin xyz="0 0 0"/>
+<axis xyz="0.000000 1.000000 0.000000"/>
+</induction_coupler>
+</force_element>
+<joint name="arm3_joint" type="continuous">
+<origin xyz="0 0 0" rpy="1.570796 0.000000 0.124355" />
+<axis xyz = "0.124035 -0.992278 0.000000" />
+<parent link="base_link"/>
+<child link="arm3_link"/>
+</joint>
+<link name="arm3_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="0 0 0" xyz="0.000000 0.000000 -0.161245" />
+<geometry>
+<cylinder length="0.322490" radius="0.01" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<joint name="coupler4_joint" type="continuous">
+<origin xyz="0.040000 -0.320000 0.000000"/>
+<axis xyz = "0.000000 0.000000 1.000000" />
+<parent link="base_link"/>
+<child link="coupler4_link"/>
+</joint>
+<link name="coupler4_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="0.000000 0.000000 0.000000" xyz="0 0 0" />
+<geometry>
+<cylinder length="0.01" radius="0.02" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<force_element name="coupler4">
+<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
+<parent link="coupler4_link"/>
+<origin xyz="0 0 0"/>
+<axis xyz="0.000000 0.000000 1.000000"/>
+</induction_coupler>
+</force_element>
+<joint name="arm4_joint" type="continuous">
+<origin xyz="0 0 0" rpy="1.570796 0.000000 0.124355" />
+<axis xyz = "0.124035 -0.992278 0.000000" />
+<parent link="base_link"/>
+<child link="arm4_link"/>
+</joint>
+<link name="arm4_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="0 0 0" xyz="0.000000 0.000000 -0.161245" />
+<geometry>
+<cylinder length="0.322490" radius="0.01" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<joint name="coupler5_joint" type="continuous">
+<origin xyz="0.040000 0.000000 0.320000"/>
+<axis xyz = "0.000000 1.000000 0.000000" />
+<parent link="base_link"/>
+<child link="coupler5_link"/>
+</joint>
+<link name="coupler5_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="1.570796 -0.000000 3.141593" xyz="0 0 0" />
+<geometry>
+<cylinder length="0.01" radius="0.02" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<force_element name="coupler5">
+<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
+<parent link="coupler5_link"/>
+<origin xyz="0 0 0"/>
+<axis xyz="0.000000 1.000000 0.000000"/>
+</induction_coupler>
+</force_element>
+<joint name="arm5_joint" type="continuous">
+<origin xyz="0 0 0" rpy="0.124355 -0.000000 1.570796" />
+<axis xyz = "0.124035 0.000000 0.992278" />
+<parent link="base_link"/>
+<child link="arm5_link"/>
+</joint>
+<link name="arm5_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="0 0 0" xyz="0.000000 0.000000 -0.161245" />
+<geometry>
+<cylinder length="0.322490" radius="0.01" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<joint name="coupler6_joint" type="continuous">
+<origin xyz="0.040000 0.000000 -0.320000"/>
+<axis xyz = "0.000000 1.000000 0.000000" />
+<parent link="base_link"/>
+<child link="coupler6_link"/>
+</joint>
+<link name="coupler6_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="1.570796 -0.000000 3.141593" xyz="0 0 0" />
+<geometry>
+<cylinder length="0.01" radius="0.02" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+<force_element name="coupler6">
+<induction_coupler lower_limit="-10" upper_limit="10" scale_factor_thrust="1.0" scale_factor_moment="0.0245">
+<parent link="coupler6_link"/>
+<origin xyz="0 0 0"/>
+<axis xyz="0.000000 1.000000 0.000000"/>
+</induction_coupler>
+</force_element>
+<joint name="arm6_joint" type="continuous">
+<origin xyz="0 0 0" rpy="3.017238 -0.000000 1.570796" />
+<axis xyz = "0.124035 0.000000 -0.992278" />
+<parent link="base_link"/>
+<child link="arm6_link"/>
+</joint>
+<link name="arm6_link">
+<inertial>
+<mass value="0.01"/>
+<origin xyz="0 0 0"/>
+<inertia ixx="0.01" ixy="0" ixz="0" iyx="0" iyy="0.01" iyz="0" izx="0" izy="0" izz="0.01" />
+</inertial>
+<visual>
+<origin rpy="0 0 0" xyz="0.000000 0.000000 -0.161245" />
+<geometry>
+<cylinder length="0.322490" radius="0.01" />
+</geometry>
+</visual>
+<collision>
+<origin rpy="0 0 0" xyz="0 0 0" />
+<geometry>
+<box size="0.0 0.0 0.0" />
+</geometry>
+</collision>
+</link>
+</robot>

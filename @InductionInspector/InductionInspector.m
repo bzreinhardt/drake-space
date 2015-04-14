@@ -4,7 +4,10 @@ classdef InductionInspector < NonlinRigidBodyManipulator
     
     function obj = InductionInspector(urdf,sensor)
       if nargin<1 
-          urdf = 'models/two_coupler_inspector.urdf';
+          n = length('InductionInspector');
+          root = mfilename('fullpath');
+          filename = root(1:end-n);
+          urdf = fullfile(filename,'/models/two_coupler_inspector.urdf');
           sensor='';
       elseif nargin == 1
           sensor = '';
@@ -13,7 +16,7 @@ classdef InductionInspector < NonlinRigidBodyManipulator
       %options.terrain = RigidBodyFlatTerrain();
       w = warning('off','Drake:RigidBodyManipulator:ReplacedCylinder');
       warning('off','Drake:RigidBodyManipulator:UnsupportedContactPoints');
-      obj = obj@NonlinRigidBodyManipulator(getFullPathFromRelativePath(urdf),options);
+      obj = obj@NonlinRigidBodyManipulator(urdf,options);
       warning(w);
       
       switch (sensor)
@@ -212,7 +215,7 @@ classdef InductionInspector < NonlinRigidBodyManipulator
       [ytraj,xtraj,lcmlog] = simulate(sys,[0 5],double(x0),options);
       
    %   [ytraj2,xtraj2] = simulateODE(sys,[0,2],double(x0),options)
-      lcmlog
+      lcmlog;
       %v.playback(xtraj,struct('lcmlog',lcmlog));
       figure(1); clf; fnplt(ytraj,3);
       v.playback(xtraj);

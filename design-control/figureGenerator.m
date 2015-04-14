@@ -14,6 +14,22 @@ classdef figureGenerator
     % Zoom in on figure 3c-d
     methods
         
+        function bigConvergenceFig(obj)
+            [volumes,iterations,baseline] = parsePendTests('/home/ben/drake-space/data/pendulum_convergence_test/long_convergence_test');
+            figure(1234); clf;
+            
+            scatter(iterations,volumes,50,'*'); hold on;
+            plot([0,iterations,max(iterations)+50],baseline.controller.volume*ones(size([0,iterations])+1),'LineWidth',3,'Color','b');
+            legend('Generated Controllers','Optimal Design');
+            xlabel('Number of Iterations');
+            ylabel('Normalized Controller Volume');
+            ylim([0.1, 1.3]);
+            xlim([0, max(iterations)+50]);
+            
+            hgsave(strcat(obj.fig_folder,'pendulum-convergence-big.fig'));
+            save2pdf(strcat(obj.target_folder,'pendulum-convergence-bg.pdf'));
+            
+        end
         function convergenceFig(obj)
             [volumes,iterations,baseline] = parsePendTests('/home/ben/drake-space/data/pendulum_convergence_test');
             figure(1234); clf;

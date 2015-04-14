@@ -14,7 +14,9 @@ if isequal(axis,[0;0;1])
 end
 z = axis;
 x = cross([0;0;1],axis);
+x = x/norm(x);
 y = cross(z,x);
+y = y/norm(y);
 w_R_b = [x y z];
 rpy = rotmat2rpy(w_R_b);
 
