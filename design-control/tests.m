@@ -763,7 +763,7 @@ function overnightCmaesTest
         opts.StopIter = its;
         [XMIN, FMIN, COUNTEVAL, STOPFLAG, OUT, BESTEVER] = cmaes('inspectorFitFun',X0,sigma,opts,p);
         folder = strcat('output_',num2str(its));
-        system(strcat('bash rename_cmaes.sh ',folder));
+        system(['bash rename_cmaes.sh ',folder]);
     end
 end
 
