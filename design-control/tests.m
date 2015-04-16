@@ -746,7 +746,7 @@ function testCmaesSave
         opts.StopIter = its;
         [XMIN, FMIN, COUNTEVAL, STOPFLAG, OUT, BESTEVER] = cmaes('inspectorFitFun',X0,sigma,opts);
         folder = strcat('output_',num2str(its));
-        system(strcat('bash rename_cmaes.sh ',folder));
+        system(['bash rename_cmaes.sh ',folder]);
 end
 
 function overnightCmaesTest
@@ -755,15 +755,16 @@ function overnightCmaesTest
         opts.UBounds = angle_range(2)*ones(4,1);
         
         %cmaes options
-        sigma = pi/6;
+        sigma = pi/2;
         X0 = [-2*pi/3; -3*pi/4; -pi/4; -pi/3];
         
     %run cmaes for some number of iterations
     for its = 3:20
         opts.StopIter = its;
-        [XMIN, FMIN, COUNTEVAL, STOPFLAG, OUT, BESTEVER] = cmaes('inspectorFitFun',X0,sigma,opts,p);
+        [XMIN, FMIN, COUNTEVAL, STOPFLAG, OUT, BESTEVER] = cmaes('inspectorFitFun',X0,sigma,opts);
         folder = strcat('output_',num2str(its));
         system(['bash rename_cmaes.sh ',folder]);
+        
     end
 end
 
