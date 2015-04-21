@@ -2,7 +2,7 @@ classdef figureGenerator
     properties
         target_folder = '~/Documents/papers/controller_creation/graphics/';
         fig_folder = '~/drake-space/graphics/control-metric-design/';
-        fig_array = [1,2,3,4];
+        fig_array = [1330,1331,1332,1333];
         name_array = {'d_human','d_algorithm','c_human',...
                 'c_algorithm'};
             
@@ -14,11 +14,14 @@ classdef figureGenerator
     % Zoom in on figure 3c-d
     methods
         
-        function bigConvergenceFig(obj)
+        function randPendConvergenceFig(obj,big)
+            %convergence for pendulum using random
+            %default: big
             [volumes,iterations,baseline] = parsePendTests('/home/ben/drake-space/data/pendulum_convergence_test/long_convergence_test');
             figure(1234); clf;
             
             scatter(iterations,volumes,50,'*'); hold on;
+            if nargin < 2 || big == 1
             plot([0,iterations,max(iterations)+50],baseline.controller.volume*ones(size([0,iterations])+1),'LineWidth',3,'Color','b');
             legend('Generated Controllers','Optimal Design');
             xlabel('Number of Iterations');
@@ -28,13 +31,8 @@ classdef figureGenerator
             
             hgsave(strcat(obj.fig_folder,'pendulum-convergence-big.fig'));
             save2pdf(strcat(obj.target_folder,'pendulum-convergence-bg.pdf'));
-            
-        end
-        function convergenceFig(obj)
-            [volumes,iterations,baseline] = parsePendTests('/home/ben/drake-space/data/pendulum_convergence_test');
-            figure(1234); clf;
-            scatter(iterations,volumes,50,'*'); hold on;
-            plot([0,iterations],baseline.controller.volume*ones(size([0,iterations])),'LineWidth',3);
+            else
+                 plot([0,iterations],baseline.controller.volume*ones(size([0,iterations])),'LineWidth',3);
             legend('Generated Controllers','Optimal Design');
             xlabel('Number of Iterations');
             ylabel('Normalized Controller Volume');
@@ -42,24 +40,110 @@ classdef figureGenerator
             
             hgsave(strcat(obj.fig_folder,'pendulum-convergence.fig'));
             save2pdf(strcat(obj.target_folder,'pendulum-convergence.pdf'));
+            end
+                
+        end
+        
+        function generateInspectorDesignVsGenerations(obj)
+            %plot inspector design convergence as you use more generations
+            [params, vol, gen] = loadInspectorDesigns();
+            figure(1337);clf;
+            plot(gen,vol,'x');
+            xlabel('Maximum Generations');
+            ylabel('Controllable Volume');
             
         end
+        
+        function generateAlgControlVolumeFig(obj)
+            %generates control volume and image for best design from cmaes
+            figure(obj.fig_array(3));clf;
+            [params, vol, gen] = loadInspectorDesigns();
+            [a,d] = armAnglesToInspectorParams(params{end});
+            insp = Inspector2d(a,d);
+            defaults = loadjson('inspector_default_values.json');
+            range = defaults.range;
+            opt_prm = LQRPRM(insp,range);
+            opt_prm.regions_max = 20;
+            options = struct;
+            options.method = 'tilqr';
+            options.rand_method = 'rand';
+            opt_prm = opt_prm.fillRegion(options);
+            opt_prm.draw(obj.fig_array(3));
+            title(['V_a = ', num2str(opt_prm.volume)]);
+            xlabel('x1 (m)');
+            ylabel('x2 (m)');
+           
+        end
+        
+        function generateAlgDesignFig(obj)
+            figure(obj.fig_array(2));clf;
+            %generates figure for the best design
+            [params, vol, gen] = loadInspectorDesigns();
+            [a,d] = armAnglesToInspectorParams(params{end});
+            insp = Inspector2d(a,d);
+            
+ 
+insp_vis = Inspector2dVisualizer(insp,obj.fig_array(2));
+           insp_vis.draw(0,[0;0.11;zeros(4,1)]);
+           xlabel('x1 (m)');
+            ylabel('x2 (m)');
+            title('');
+        end
+        
+        function generateHumanControlVolumeFig(obj)
+            fig_num = obj.fig_array(4);
+            figure(fig_num);clf;
+             %generates control volume and image for human design
+            baseline = loadjson('human_baseline_vals.json');
+            a = baseline.a;
+            d = baseline.d;
+            insp = Inspector2d(a,d);
+            defaults = loadjson('inspector_default_values.json');
+            range = defaults.range;
+            opt_prm = LQRPRM(insp,range);
+            opt_prm.regions_max = 20;
+            options = struct;
+            options.method = 'tilqr';
+            options.rand_method = 'rand';
+            opt_prm = opt_prm.fillRegion(options);
+            opt_prm.draw(fig_num);
+            
+            title(['V_h = ', num2str(opt_prm.volume)]);
+            xlabel('x1 (m)');
+            ylabel('x2 (m)');
+        end
+        
+        function generateHumanDesignFig(obj)
+            fig_num = obj.fig_array(1);
+            figure(fig_num);clf;
+               %generates figure for the human design
+            baseline = loadjson('human_baseline_vals.json');
+            a = baseline.a;
+            d = baseline.d;
+            insp = Inspector2d(a,d);
+           
+           insp_vis = Inspector2dVisualizer(insp,fig_num);
+           insp_vis.draw(0,[0;0.11;zeros(4,1)]);
+           xlabel('x1 (m)');
+            ylabel('x2 (m)');
+        title('');
+        end
+        
         
         function obj = loadFourFigs(obj)
+          %load the four algorithm pictures  
+            obj.generateHumanDesignFig;
+            obj.generateAlgDesignFig;
+            obj.generateHumanControlVolumeFig;
+            obj.generateAlgControlVolumeFig;
             
-            for i = 1:length(obj.name_array)
-                
-                obj.fig_array(i) = openfig(strcat(obj.fig_folder,obj.name_array{i},'.fig'));
-            end
         end
         
-        function genFourFigs(obj,open)
+        function saveFourFigsToPdf(obj,open)
 
             if nargin>1
                 obj.loadFourFigs;
             end
-            
-            
             %generate baseline and algorithmic figures
             xl_d = [-0.2 0.2];
             yl_d = [0.0 0.2];
@@ -80,11 +164,11 @@ classdef figureGenerator
                 ylim(yl);
                 set(obj.fig_array(i),'Position',[100 100 800 600]);
                 xlabel('x1 (m)'); ylabel('x2 (m)');
-                hgsave(strcat(obj.fig_folder,obj.name_array{i},'.fig'));
+                %hgsave(strcat(obj.fig_folder,obj.name_array{i},'.fig'));
                 save2pdf(strcat(obj.target_folder,obj.name_array{i},'.pdf'));
             end
         end
-        
+  %%%%%%% Functions for dealing with the simple regions graphics %%%%%%      
          function updateSimpleRegions(obj,filename,foldername)
             if nargin < 3
                 foldername = '/home/ben/drake-space/graphics/control-metric-design/';

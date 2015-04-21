@@ -17,10 +17,11 @@ function [range,full] = findOptimalPendVol(max_regions,N)
     p.pend_opts.range = range;
     
  
-    full = zeros(100,1);
+    full = zeros(20,1);
     for i = 1:N
        	v = paramFitFun(ones(4,1)*0.5,p);
         full(i) = v;
     end
     range = [min(full) max(full)];
+    savejson('',full,'optimal_pend_vols.json');
 end

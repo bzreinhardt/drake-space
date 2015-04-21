@@ -1,9 +1,7 @@
 function fitness = inspectorFitFun(params,p)
+%Generates fitness metric for 2d inspector with cmaes
 %params - arm angles
 % consts
-a = [zeros(2,length(params)); ones(2,length(params))]; %axes all in +z
-l = 0.1; %arm legnth
-d = zeros(3,length(params));
 %parse inputs
 if nargin > 1
 range = p.range;
@@ -20,12 +18,7 @@ else
 end
 
 %set up parameters
-for i = 1:length(params)
-    d(:,i) = [l*cos(params(i));l*sin(params(i));0];
-    % p - struct with options
-    % p.pend_opts - struct with options for pendulum fit functions
-    
-end
+[a,d] = armAnglesToInspectorParams(params);
 %generate inspector
 insp = Inspector2d(a,d);
 prm = LQRPRM(insp,range);
