@@ -1,15 +1,19 @@
 cd '~/drake-space/double-pendulum'
 %demonstrateConvergenceCmaes;
 
-baseline_volume = -min(loadjson('optimal_pend_vols.json')); 
+opt_vols = loadjson('optimal_vols_20_regions.json')
+baseline_volume = -min(opt_vols.range); 
         
 
 
 fig = figure(1337);
 clf;
-plotPendulumDesignVsGenerations;
+ [params, vol, gen] = loadPendulumDesigns();
+            plot(gen,vol/baseline_volume,'x','MarkerSize',15);
+            xlabel('Maximum Generations');
+            ylabel('Controllable Volume');  
 hold on
 x_lims = get(gca,'XLim');
-plot(x_lims,baseline_volume*ones(2,1), 'LineWidth',2);
+plot(x_lims, ones(2,1), 'LineWidth',2);
 hold off;
 save2pdf('~/Documents/papers/controller_creation/graphics/cmaes_convergence.pdf');

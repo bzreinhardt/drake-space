@@ -28,7 +28,6 @@ solution = output.result.solution;
 time = solution.phase.time;
 state = solution.phase.state;
 control = solution.phase.control;
-realControl = [control(:,1),control(:,2)];
 for i=1:length(output.meshhistory);
   mesh(i).points = [0 cumsum(output.meshhistory(i).result.setup.mesh.phase.fraction)];
   mesh(i).iteration = i*ones(size(mesh(i).points));
@@ -53,7 +52,58 @@ end
 end
 
 if (disp)
-% Plot Solution.
+%plot control on same plot
+figure(1337);clf;
+pp = plot(time,control(:,1:end));
+xl = xlabel('t [sec]');
+yl = ylabel('control [rad/sec]');
+set(xl,'Fontsize',18);
+set(yl,'Fontsize',18);
+set(gca,'Fontsize',16);
+set(pp,'LineWidth',1.25);
+%axis square
+grid on
+legend('u1','u2','u3')
+
+figure(1338);clf;
+pp = plot(time,state(:,1:3));
+xl = xlabel('t [sec]');
+yl = ylabel('position and heading');
+set(xl,'Fontsize',18);
+set(yl,'Fontsize',18);
+set(gca,'Fontsize',16);
+set(pp,'LineWidth',1.25);
+%axis square
+grid on
+legend('x','y','theta')
+figure(1339);clf;
+pp = plot(time,state(:,4:6));
+xl = xlabel('t [sec]');
+yl = ylabel('velocities');
+set(xl,'Fontsize',18);
+set(yl,'Fontsize',18);
+set(gca,'Fontsize',16);
+set(pp,'LineWidth',1.25);
+%axis square
+grid on
+legend('vx','vy','omega')
+
+figure(1340);clf;
+pp = plot(state(:,1),state(:,2));
+xl = xlabel('x position [m]');
+yl = ylabel('y position [m]');
+set(xl,'Fontsize',18);
+set(yl,'Fontsize',18);
+set(gca,'Fontsize',16);
+set(pp,'LineWidth',1.25);
+hold on
+if isfield(options,'p')
+    drawCircle(options.p.sphere_radius, options.p.sphere_center);
+end
+hold off;
+
+elseif(disp2)
+% Plot Solution on different plots.
 figure(1);
 pp = plot(time,state(:,1),'-o');
 xl = xlabel('t [sec]');
@@ -127,7 +177,7 @@ grid on
 %print -dpng Time-vs-angVel.png
 
 figure(7);
-pp = plot(time,realControl(:,1),'-o');
+pp = plot(time,control(:,1),'-o');
 xl = xlabel('t [sec]');
 yl = ylabel('U1');
 set(xl,'Fontsize',18);
@@ -139,7 +189,7 @@ grid on
 %print -dpng Time-vs-Control.png
 
 figure(8);
-pp = plot(time,realControl(:,2),'-o');
+pp = plot(time,control(:,2),'-o');
 xl = xlabel('t [sec]');
 yl = ylabel('U2');
 set(xl,'Fontsize',18);
