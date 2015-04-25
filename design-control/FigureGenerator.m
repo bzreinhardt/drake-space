@@ -1,10 +1,11 @@
-classdef figureGenerator
+classdef FigureGenerator
     properties
         target_folder = '~/Documents/papers/controller_creation/graphics/';
         fig_folder = '~/drake-space/graphics/control-metric-design/';
         fig_array = [1330,1331,1332,1333];
         name_array = {'d_human','d_algorithm','c_algorithm','c_human'};
         fig_num = 1337; %main drawing fig
+        
             
         
     end
@@ -75,15 +76,16 @@ classdef figureGenerator
            
         end
         
-        function drawDesign(obj,params)
+        function h = drawDesign(obj,params)
             figure(obj.fig_num); clf;
-            [a,d] = armAnglesToInspectorParams(params{end});
+            [a,d] = armAnglesToInspectorParams(params);
             insp = Inspector2d(a,d);
             insp_vis = Inspector2dVisualizer(insp,obj.fig_num);
             insp_vis.draw(0,[0;0.11;zeros(4,1)]);
             xlabel('x1 (m)');
             ylabel('x2 (m)');
             title('');
+            h = gca;
         end
         
         function generateAlgDesignFig(obj)
@@ -229,7 +231,7 @@ insp_vis = Inspector2dVisualizer(insp,obj.fig_array(2));
          end
          
           function obj = set(obj,property,value)
-            if checkPropertyExists('DesignLoader',property)
+            if checkPropertyExists('FigureGenerator',property)
                 obj.(property) = value;
             end
         end

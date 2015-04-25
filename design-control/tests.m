@@ -768,6 +768,25 @@ function overnightCmaesTest
     end
 end
 
+function overnightRandomCmaesTest
+        angle_range = [-pi 0];
+        opts.LBounds = angle_range(1)*ones(4,1);
+        opts.UBounds = angle_range(2)*ones(4,1);
+        
+        %cmaes options
+        sigma = pi/2;
+        X0 = [-2*pi/3; -3*pi/4; -pi/4; -pi/3];
+        
+    %run cmaes for some number of iterations
+    for randruns = 1:10
+        opts.StopIter = 10;
+        [XMIN, FMIN, COUNTEVAL, STOPFLAG, OUT, BESTEVER] = cmaes('inspectorFitFun',X0+sigma*randn(4,1),sigma,opts);
+        folder = strcat('rand_output_',num2str(randruns));
+        system(['bash rename_cmaes.sh ',folder]);
+        
+    end
+end
+
 
 function testCmaesFrosen
 %check that cmaes works with frosen function

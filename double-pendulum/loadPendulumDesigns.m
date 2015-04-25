@@ -8,7 +8,7 @@ function [params, vol, gen] = loadPendulumDesigns(runs)
     for i = 1:length(runs)
         foldername = ['max_iterations_',num2str(runs(i))];
         disp(['loading ',foldername]);
-        es = load([foldername, '/outlescmaes.mat']);
+        es = load([foldername, '/variablescmaes.mat']);
         if es.out.solutions.bestever.f ~= -10000
             vol(end+1) = -es.out.solutions.bestever.f;
             gen(end+1) = runs(i);
